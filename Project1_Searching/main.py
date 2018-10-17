@@ -35,9 +35,7 @@ class App(QDialog):
         
     def initUI(self):
         self.setGeometry(self.left, self.top, self.width, self.height)
-         
         self.createLayout()
-        
         self.show()
  
     def createLayout(self):
@@ -58,6 +56,8 @@ class App(QDialog):
         def foo():
             while self.solver.step():
                 time.sleep(0.2)
+            self.solver.trace()
+
         _thread.start_new_thread(foo, ())
 
 class Graph:
@@ -88,6 +88,10 @@ class Node:
         self.id = id
         self.neighbors = []
         self.dist = INF
+        self.parent = None
+
+    def __lt__(self, other):
+        return self.dist < other.dist
         
     def setOpened(self):
         self.btn.setText(str(self.dist))
@@ -103,14 +107,13 @@ class Node:
             but.setStyleSheet(black)
         elif self.val in 'SG':
             but.setStyleSheet(green)
-
-    def __lt__(self, other):
-        return self.dist < other.dist
-    
+    def setOnPath(self):
+        self.btn.setStyleSheet(green)
+        
 class Solver:
     def __init__(self, graph, app):
         self.bindGraph(graph, app)
-        self.__stepper = self.__step()
+        self.algo = self.dijkstra()
         self.pq = queue.PriorityQueue()
 
     def bindGraph(self, graph, app):
@@ -119,10 +122,17 @@ class Solver:
             node.bindButton(app.button[node.id])
 
     def step(self):
-        return self.__stepper.__next__()
+        return self.algo.__next__()
+    
+    def trace(self):
+        S = self.graph.nodes[self.graph.S]
+        G = self.graph.nodes[self.graph.G]
+        while G != None:
+            G.setOnPath()
+            G = G.parent
 
-    # return True if stopped
-    def __step(self):
+    # return False if stopped
+    def dijkstra(self):
         S = self.graph.nodes[self.graph.S]
         G = self.graph.nodes[self.graph.G]
         S.dist = 0
@@ -144,6 +154,7 @@ class Solver:
                     neighbor.dist = cur.dist + weight
                     neighbor.setOpened()
                     self.pq.put((neighbor.dist, neighbor))
+                    neighbor.parent = cur
                     yield True
 
         yield False
