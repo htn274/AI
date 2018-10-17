@@ -11,9 +11,11 @@ import _thread
 
 red = "background-color: red"
 blue = "background-color: blue"
+green = "background-color: green"
+black = "background-color: black"
 INF = 10 ** 9
 
-CELL_SIZE = 20
+CELL_SIZE = 40
  
 class App(QDialog):
     def __init__(self):
@@ -42,7 +44,8 @@ class App(QDialog):
         m = n = self.graph.N
         for i in range(n):
             for j in range(m):
-                but = QPushButton("x", self)
+                but = QPushButton("", self)
+                but.setEnabled(False)
                 but.setFixedSize(CELL_SIZE, CELL_SIZE)
                 but.move(i * CELL_SIZE, j * CELL_SIZE)
                 self.button[(j, i)] = but
@@ -87,16 +90,19 @@ class Node:
         self.dist = INF
         
     def setOpened(self):
+        self.btn.setText(str(self.dist))
         self.btn.setStyleSheet(blue)
-        self.btn.show()
 
     def setClosed(self):
+        self.btn.setText(str(self.dist))
         self.btn.setStyleSheet(red)
-        self.btn.show()
 
     def bindButton(self, but):
         self.btn = but
-        but.setText(self.val)
+        if self.val == '1':
+            but.setStyleSheet(black)
+        elif self.val in 'SG':
+            but.setStyleSheet(green)
 
     def __lt__(self, other):
         return self.dist < other.dist
@@ -135,8 +141,8 @@ class Solver:
             for neighbor, weight in cur.neighbors:
                 print(neighbor.id, weight)
                 if neighbor.dist > cur.dist + weight:
-                    neighbor.setOpened()
                     neighbor.dist = cur.dist + weight
+                    neighbor.setOpened()
                     self.pq.put((neighbor.dist, neighbor))
                     yield True
 
