@@ -11,7 +11,7 @@ import _thread
 import threading
 
 red = "background-color: red"
-blue = "background-color: pink"
+blue = "background-color: blue"
 green = "background-color: green"
 black = "background-color: black"
 yellow = "background-color: rgb(255, 255, 0)"
@@ -26,7 +26,7 @@ class App(QDialog):
         self.top = 10
         self.width = 640
         self.height = 480
-        self.button = dict()
+        self.buttons = dict()
         self.graph = None
         self.initUI()
  
@@ -48,13 +48,13 @@ class App(QDialog):
         for j in range(n):
             self.boardLayout.setRowMinimumHeight(j, CELL_SIZE)
             
-        self.button = dict()
+        self.buttons = dict()
         for i in range(n):
             for j in range(m):
                 but = QPushButton("", self)
                 but.setEnabled(False)
                 but.setFixedSize(CELL_SIZE, CELL_SIZE)
-                self.button[(i, j)] = but
+                self.buttons[(i, j)] = but
                 self.boardLayout.addWidget(but, i, j)
                 
     def createLayout(self):
@@ -144,7 +144,7 @@ class Node:
         
     def setOpened(self):
         self.btn.setText(f'{self.dist:.2f}')
-#         self.btn.setStyleSheet(blue)
+        self.btn.setStyleSheet(blue)
 
     def setClosed(self):
         self.btn.setText(f'{self.dist:.2f}')
@@ -170,7 +170,7 @@ class Solver:
     def bindGraph(self, graph, app):
         self.graph = graph
         for node in graph.nodes.values():
-            node.bindButton(app.button[node.id])
+            node.bindButton(app.buttons[node.id])
 
     def step(self):
         return self.algo.__next__()
