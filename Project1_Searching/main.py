@@ -1,7 +1,7 @@
 import sys
 from math import *
 import PyQt5
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout, QFileDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 from itertools import product
@@ -11,58 +11,96 @@ import _thread
 import threading
 
 red = "background-color: red"
-blue = "background-color: blue"
+blue = "background-color: pink"
 green = "background-color: green"
 black = "background-color: black"
+yellow = "background-color: rgb(255, 255, 0)"
 INF = 10 ** 9
 
-CELL_SIZE = 60
+CELL_SIZE = 40
  
 class App(QDialog):
     def __init__(self):
         super().__init__()
-        self.initGraph()
         self.left = 10
         self.top = 10
-        self.width = self.graph.N * CELL_SIZE
-        self.height = self.graph.N * CELL_SIZE + 20
+        self.width = 640
+        self.height = 480
         self.button = dict()
+        self.graph = None
         self.initUI()
-        self.solver = Solver(self.graph, self)
  
-    def initGraph(self):
-        self.graph = Graph()
-        self.graph.loadFromFile('a.in')
-        
     def initUI(self):
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.setFixedSize(self.width, self.height)
         self.createLayout()
         self.show()
- 
-    def createLayout(self):
-        m = n = self.graph.N
+
+    def initBoard(self):
+        if self.graph:
+            m = n = self.graph.N
+        else:
+            m = self.width // CELL_SIZE
+            n = self.height // CELL_SIZE
+        
+        for i in range(m):
+            self.boardLayout.setColumnMinimumWidth(i, CELL_SIZE)
+
+        for j in range(n):
+            self.boardLayout.setRowMinimumHeight(j, CELL_SIZE)
+            
+        self.button = dict()
         for i in range(n):
             for j in range(m):
                 but = QPushButton("", self)
                 but.setEnabled(False)
                 but.setFixedSize(CELL_SIZE, CELL_SIZE)
-                but.move(i * CELL_SIZE, j * CELL_SIZE)
-                self.button[(j, i)] = but
-        solve_but = QPushButton("solve", self)
-        solve_but.move(0, n * CELL_SIZE)
-        solve_but.clicked.connect(self.on_click)
-    
+                self.button[(i, j)] = but
+                self.boardLayout.addWidget(but, i, j)
+                
+    def createLayout(self):
+        mainLayout = QVBoxLayout(self)
+
+        self.boardLayout = QGridLayout()
+        self.boardLayout.setSpacing(0)
+
+        self.initBoard()
+
+        controlLayout = QHBoxLayout()
+        loadButton = QPushButton("Load graph", self)
+        loadButton.clicked.connect(self.on_load)
+        controlLayout.addWidget(loadButton)
+        
+        solve_but = QPushButton("Solve", self)
+        solve_but.clicked.connect(self.on_solve)
+        controlLayout.addWidget(solve_but)
+
+        mainLayout.addLayout(self.boardLayout)
+        mainLayout.addLayout(controlLayout)
+
+        self.setLayout(mainLayout)
+
     @pyqtSlot()
-    def on_click(self):
+    def on_solve(self):
         def foo():
             while self.solver.step():
-                time.sleep(0.2)
+                time.sleep(0.3)
             self.solver.trace()
 
         t = threading.Thread(target = foo)
         t.start()
-#         t.join()
-#         _thread.start_new_thread(foo, ())
+
+    @pyqtSlot()
+    def on_load(self):
+        option = QFileDialog.Options()
+        option |= QFileDialog.DontUseNativeDialog
+        fname = QFileDialog.getOpenFileName(self, "Load graph", "", "Text files (*.txt, *.in)", options = option)[0]
+        self.graph = Graph()
+        self.graph.loadFromFile(fname)
+        self.width = self.graph.N * CELL_SIZE
+        self.height = self.graph.N * CELL_SIZE + CELL_SIZE
+        QWidget().setLayout(self.layout())
+        self.initUI()
+        self.solver = Solver(self.graph, self)
 
 def Euclide_dist(a, b):
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
@@ -106,23 +144,23 @@ class Node:
         
     def setOpened(self):
         self.btn.setText(f'{self.dist:.2f}')
-#         self.btn.setStyleSheet("background-color: blue")
+#         self.btn.setStyleSheet(blue)
 
     def setClosed(self):
         self.btn.setText(f'{self.dist:.2f}')
-        self.btn.setStyleSheet("background-color: red")
+        self.btn.setStyleSheet(red)
 
     def bindButton(self, but):
         self.btn = but
         if self.val == '1':
-            but.setStyleSheet("background-color: black")
+            but.setStyleSheet(black)
         elif self.val in 'SG':
-            but.setStyleSheet("background-color: green")
+            but.setStyleSheet(green)
             
     def setOnPath(self):
         pass
 #         self.btn.setText('o')
-        self.btn.setStyleSheet("background-color: green")
+        self.btn.setStyleSheet(yellow)
         
 class Solver:
     def __init__(self, graph, app):
