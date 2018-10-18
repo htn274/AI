@@ -110,7 +110,7 @@ class Node:
 
     def setClosed(self):
         self.btn.setText(f'{self.dist:.2f}')
-#         self.btn.setStyleSheet("background-color: red")
+        self.btn.setStyleSheet("background-color: red")
 
     def bindButton(self, but):
         self.btn = but
