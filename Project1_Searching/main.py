@@ -8,6 +8,7 @@ from itertools import product
 import time
 import queue
 import _thread
+import threading
 
 red = "background-color: red"
 blue = "background-color: blue"
@@ -15,7 +16,7 @@ green = "background-color: green"
 black = "background-color: black"
 INF = 10 ** 9
 
-CELL_SIZE = 40
+CELL_SIZE = 60
  
 class App(QDialog):
     def __init__(self):
@@ -58,7 +59,16 @@ class App(QDialog):
                 time.sleep(0.2)
             self.solver.trace()
 
-        _thread.start_new_thread(foo, ())
+        t = threading.Thread(target = foo)
+        t.start()
+#         t.join()
+#         _thread.start_new_thread(foo, ())
+
+def Euclide_dist(a, b):
+    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
+
+def Loo(a, b):
+    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
 
 class Graph:
     def loadFromFile(self, fname):
@@ -73,6 +83,7 @@ class Graph:
 
             for i, j in product(range(N), range(N)):
                 self.nodes[(i, j)].val = map_mat[i][j]
+                self.nodes[(i, j)].h = Euclide_dist((i, j), G)
                 
                 if map_mat[i][j] != '1':
                     for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]:
@@ -91,30 +102,32 @@ class Node:
         self.parent = None
 
     def __lt__(self, other):
-        return self.dist < other.dist
+        return self.id < other.id
         
     def setOpened(self):
-        self.btn.setText(str(self.dist))
-        self.btn.setStyleSheet(blue)
+        self.btn.setText(f'{self.dist:.2f}')
+#         self.btn.setStyleSheet("background-color: blue")
 
     def setClosed(self):
-        self.btn.setText(str(self.dist))
-        self.btn.setStyleSheet(red)
+        self.btn.setText(f'{self.dist:.2f}')
+#         self.btn.setStyleSheet("background-color: red")
 
     def bindButton(self, but):
         self.btn = but
         if self.val == '1':
-            but.setStyleSheet(black)
+            but.setStyleSheet("background-color: black")
         elif self.val in 'SG':
-            but.setStyleSheet(green)
+            but.setStyleSheet("background-color: green")
+            
     def setOnPath(self):
-        self.btn.setStyleSheet(green)
+        pass
+#         self.btn.setText('o')
+        self.btn.setStyleSheet("background-color: green")
         
 class Solver:
     def __init__(self, graph, app):
         self.bindGraph(graph, app)
-        self.algo = self.dijkstra()
-        self.pq = queue.PriorityQueue()
+        self.algo = self.a_star()
 
     def bindGraph(self, graph, app):
         self.graph = graph
@@ -128,6 +141,7 @@ class Solver:
         S = self.graph.nodes[self.graph.S]
         G = self.graph.nodes[self.graph.G]
         while G != None:
+            print(G.id)
             G.setOnPath()
             G = G.parent
 
@@ -136,24 +150,51 @@ class Solver:
         S = self.graph.nodes[self.graph.S]
         G = self.graph.nodes[self.graph.G]
         S.dist = 0
-        self.pq.put((0, S))
-        while self.pq.qsize():
-            cur_dist, cur = self.pq.get()
+        pq = queue.PriorityQueue()
+        pq.put((0, S))
+        while pq.qsize():
+            cur_dist, cur = pq.get()
 
             if cur_dist != cur.dist:
                 continue
 
             cur.setClosed()
-            
+
             if cur == G:
                 break
             
             for neighbor, weight in cur.neighbors:
-                print(neighbor.id, weight)
                 if neighbor.dist > cur.dist + weight:
                     neighbor.dist = cur.dist + weight
                     neighbor.setOpened()
-                    self.pq.put((neighbor.dist, neighbor))
+                    pq.put((neighbor.dist, neighbor))
+                    neighbor.parent = cur
+                    yield True
+
+        yield False
+    
+    def a_star(self):
+        S = self.graph.nodes[self.graph.S]
+        G = self.graph.nodes[self.graph.G]
+        S.dist = S.h
+        pq = queue.PriorityQueue()
+        pq.put((S.h, S))
+        while pq.qsize():
+            cur_dist, cur = pq.get()
+
+            if cur_dist != cur.dist:
+                continue
+
+            cur.setClosed()
+
+            if cur == G:
+                break
+
+            for neighbor, weight in cur.neighbors:
+                if neighbor.dist > cur.dist - cur.h + weight + neighbor.h:
+                    neighbor.dist = cur.dist - cur.h + weight + neighbor.h
+                    neighbor.setOpened()
+                    pq.put((neighbor.dist, neighbor))
                     neighbor.parent = cur
                     yield True
 
