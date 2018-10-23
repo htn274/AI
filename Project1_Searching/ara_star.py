@@ -1,7 +1,9 @@
 import time
 import itertools
 import queue as Q
+import argparse
 
+INF = 10 ** 9
 """returns the Euclidian distance of (ax, ay) and (bx, by)"""
 def Euclide_dist(a, b):
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
@@ -39,8 +41,13 @@ class Progress_info:
         self.best_path = []
         self.INCONS = set([])
         self.OPEN = Q.PriorityQueue()
-        self.costs = {} #g(x)
+        self.costs = {}
     
+"""
+@mat: input matrix 
+@request: 
+@progress: infomation of current progress
+"""
 def improve_path(mat, request, progress):
     # node opening order
     DIRs = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
@@ -48,13 +55,14 @@ def improve_path(mat, request, progress):
     N = len(mat)
     CLOSED = {}
 
-    pre = {S: S}
+    pre = {request.S: request.S}
     epsilon = request.epsilon
 
     while (True):
-        _, f_value = progress.OPEN[0]
+        f_value, _ = progress.OPEN.queue[0]
+    
         if (not progress.goal_found and \
-        progress.costs[request.G] + epsilon * h[request.G] > f_value):
+        progress.costs[request.G]  + epsilon * h[request.G] > f_value):
             break
         
         if (progress.OPEN.qsize()):
@@ -64,7 +72,7 @@ def improve_path(mat, request, progress):
             return False
 
         #remove s with smallest fvalue from OPEN
-        s, f_value = progress.OPEN.get()
+        f_value, s = progress.OPEN.get()
         x, y = s
         #CLOSED = CLOSED U s
         CLOSED.add(s)
@@ -83,7 +91,7 @@ def improve_path(mat, request, progress):
                     else:
                         progress.INCONS.add(neighbor_node)
 
-    if G not in pre:
+    if request.G not in pre:
         return False
     path = [G]
     while G != S:
@@ -107,8 +115,9 @@ def ara_star(mat, request):
     
     progress = Progress_info()
     #g(Goal) = inf; g(Start) = 0
-    progress.costs[request.S] = 0
+    progress.costs = {request.S : 0}
     progress.costs[request.G] = INF
+
     progress.OPEN.put({h[request.S] * request.epsilon, request.S})
 
     progress.goal_found = improve_path(mat, request, progress)
@@ -122,9 +131,11 @@ def ara_star(mat, request):
     print("Path: ")
     print(progress.best_path)
 
-    request.epsilon = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
+    return
 
-    while (request.epsilon > 1):
+    eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
+
+    while (eps > 1):
         request.epsilon -= 0.5
         #Move states from INCONS into OPEN
         for incons in progress.INCONS:
@@ -137,19 +148,45 @@ def ara_star(mat, request):
         
         progress.OPEN = OPEN_update
 
+        #Improve path
         progress.goal_found = improve_path(mat, request, progress)
-        request.epsilon = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
+        #get new epsilon
+        eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
 
         #publish solution
         print("Epsilon: ", request.epsilon)
         print("Path: ")
         print(progress.best_path)
     
-
-# heuristic function
-    h = {(x, y): Euclide_dist((x, y), request.S) for x, y in itertools.product(range(N), range(N))}
+if __name__ == "__main__":
+    # parse argument
+    # to get input & output paths & timelimit
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument('input', help = 'input file path')
+    arg_parser.add_argument('output', help = 'output file path')
+    arg_parser.add_argument('time_limit', help = 'time limit')
+    args = arg_parser.parse_args()
+    input_file = args.input
+    output_file = args.output
+    time_limit = args.time_limit
     
-request = Request((0, 1), (3, 3), 1, 1.0)
+    # read input
+    with open(input_file, 'r') as fin:
+        N = int(fin.readline())
+        Sx, Sy = map(int, fin.readline().split())
+        Gx, Gy = map(int, fin.readline().split())
+
+        map_mat = [list(map(int, fin.readline().split())) for i in range(N)]
+
+    # heuristic function
+    global h
+    h = {(x, y): Euclide_dist((x, y), (Sx, Sy)) for x, y in itertools.product(range(N), range(N))}
+
+    # run A*
+    epsilon = 2
+    request = Request((Sx, Sy), (Gx, Gy), time_limit, epsilon)
+    ara_star(map_mat, request)
+
 
 
 
