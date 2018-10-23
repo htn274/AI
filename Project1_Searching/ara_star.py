@@ -53,21 +53,19 @@ def improve_path(mat, request, progress):
     DIRs = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
 
     N = len(mat)
-    CLOSED = {}
+    CLOSED = []
 
     pre = {request.S: request.S}
     epsilon = request.epsilon
 
-    while (True):
+    while (progress.OPEN.qsize()):
         f_value, _ = progress.OPEN.queue[0]
     
         if (not progress.goal_found and \
-        progress.costs[request.G]  + epsilon * h[request.G] > f_value):
+        progress.costs[request.G]  + epsilon * h[request.G] < f_value):
             break
         
-        if (progress.OPEN.qsize()):
-            result.path = []
-            request.Solutions.append(result)
+        if (not progress.OPEN.qsize()):
             print("No solution found by improve_path.")
             return False
 
@@ -75,7 +73,7 @@ def improve_path(mat, request, progress):
         f_value, s = progress.OPEN.get()
         x, y = s
         #CLOSED = CLOSED U s
-        CLOSED.add(s)
+        CLOSED.append(s)
         
         #traverse child of s
         for dx, dy in DIRs:
@@ -87,16 +85,16 @@ def improve_path(mat, request, progress):
                     progress.costs[neighbor_node] = progress.costs[s] + 1
                     pre[neighbor_node] = s
                     if (neighbor_node not in CLOSED):
-                        progress.OPEN.put({progress.costs[neighbor_node] + epsilon * h[neighbor_node], neighbor_node})
+                        progress.OPEN.put((progress.costs[neighbor_node] + epsilon * h[neighbor_node], neighbor_node))
                     else:
                         progress.INCONS.add(neighbor_node)
 
     if request.G not in pre:
         return False
-    path = [G]
-    while G != S:
-        G = pre[G]
-        path.append(G)
+    path = [request.G]
+    while request.G != request.S:
+        request.G = pre[request.G]
+        path.append(request.G)
 
     if (path != progress.best_path):
         progress.best_path = path
@@ -118,7 +116,7 @@ def ara_star(mat, request):
     progress.costs = {request.S : 0}
     progress.costs[request.G] = INF
 
-    progress.OPEN.put({h[request.S] * request.epsilon, request.S})
+    progress.OPEN.put((h[request.S] * request.epsilon, request.S))
 
     progress.goal_found = improve_path(mat, request, progress)
     if (progress.OPEN.qsize()):
@@ -139,7 +137,7 @@ def ara_star(mat, request):
         request.epsilon -= 0.5
         #Move states from INCONS into OPEN
         for incons in progress.INCONS:
-            progress.OPEN.put({0, incons})
+            progress.OPEN.put((0, incons))
         progress.INCONS = []
         #Update priorities for all s in OPEN
         OPEN_update = Q.PriorityQueue()
