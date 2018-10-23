@@ -65,7 +65,6 @@ def improve_path(mat, request, progress):
 
         #remove s with smallest fvalue from OPEN
         s, f_value = progress.OPEN.get()
-        result.expanded.add(s)
         x, y = s
         #CLOSED = CLOSED U s
         CLOSED.add(s)
@@ -96,18 +95,20 @@ def improve_path(mat, request, progress):
 
     return True
 
+def min_g_h(progress, request):
+    return 0
+
 """
 @mat: input matrix 
 @request: search request
 """
 def ara_star(mat, request):
-    # node opening order
-    DIRs = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
     request.go()
     
     progress = Progress_info()
     #g(Goal) = inf; g(Start) = 0
     progress.costs[request.S] = 0
+    progress.costs[request.G] = INF
     progress.OPEN.put({h[request.S] * request.epsilon, request.S})
 
     progress.goal_found = improve_path(mat, request, progress)
@@ -115,7 +116,34 @@ def ara_star(mat, request):
         request.finished()
         print("No solution found after ", request.total_search_time(), "ms")
         return
+    
+    #publish solution
+    print("Epsilon: ", request.epsilon)
+    print("Path: ")
+    print(progress.best_path)
 
+    request.epsilon = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
+
+    while (request.epsilon > 1):
+        request.epsilon -= 0.5
+        #Move states from INCONS into OPEN
+        for incons in progress.INCONS:
+            progress.OPEN.put({0, incons})
+        progress.INCONS = []
+        #Update priorities for all s in OPEN
+        OPEN_update = Q.PriorityQueue()
+        for s, f_value in progress.OPEN:
+            OPEN_update.put(progress.costs[s] + h[s] * request.epsilon)
+        
+        progress.OPEN = OPEN_update
+
+        progress.goal_found = improve_path(mat, request, progress)
+        request.epsilon = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
+
+        #publish solution
+        print("Epsilon: ", request.epsilon)
+        print("Path: ")
+        print(progress.best_path)
     
 
 # heuristic function
