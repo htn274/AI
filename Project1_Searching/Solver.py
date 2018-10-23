@@ -106,14 +106,15 @@ class Solver:
             cur.setClosed()
 
             if cur == G:
+                print("sad")
                 break
 
             for (dx, dy) in [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]:
-                nid = (cur.id[0] + dx, cur.id[1] + dy)
-                if nid not in product(range(self.graph.N), range(self.graph.N)):
+                x, y = cur.getX() + dx, cur.getY() + dy
+                if (x, y) not in product(range(self.graph.N), range(self.graph.N)):
                     continue
-                neighbor = self.graph.nodes[nid]
-                if neighbor.isObstacle:
+                neighbor = self.graph.getNode(x, y)
+                if neighbor.isObstacle():
                     continue
                 if neighbor.dist > cur.dist - cur.h + 1 + neighbor.h:
                     neighbor.dist = cur.dist - cur.h + 1 + neighbor.h
