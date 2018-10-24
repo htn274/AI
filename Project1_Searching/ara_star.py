@@ -58,16 +58,10 @@ def improve_path(mat, request, progress):
     pre = {request.S: request.S}
     epsilon = request.epsilon
 
-    while (progress.OPEN.qsize()):
+    while True:
         f_value, _ = progress.OPEN.queue[0]
-    
-        if (not progress.goal_found and \
-        progress.costs[request.G]  + epsilon * h[request.G] < f_value):
+        if progress.costs[request.G]  + epsilon * h[request.G] < f_value:
             break
-        
-        if (not progress.OPEN.qsize()):
-            print("No solution found by improve_path.")
-            return False
 
         #remove s with smallest fvalue from OPEN
         f_value, s = progress.OPEN.get()
@@ -101,8 +95,21 @@ def improve_path(mat, request, progress):
 
     return True
 
-def min_g_h(progress, request):
-    return 0
+"""
+Find min INCONS U OPEN (g + h)
+"""
+def min_g_h(progress):
+    if (progress.OPEN.qsize()):
+        min_g_h_OPEN = min(progress.costs[s] + h[s] for _, s in progress.OPEN.queue)
+    else:
+        min_g_h_OPEN = INF
+
+    if (len(progress.INCONS)):
+        min_g_h_INCONS = min(progress.costs[s] + h[s] for s in progress.INCONS)
+    else:
+        min_g_h_INCONS = INF
+
+    return min(min_g_h_OPEN, min_g_h_INCONS)
 
 """
 @mat: input matrix 
@@ -119,18 +126,19 @@ def ara_star(mat, request):
     progress.OPEN.put((h[request.S] * request.epsilon, request.S))
 
     progress.goal_found = improve_path(mat, request, progress)
-    if (progress.OPEN.qsize()):
+    if (not progress.OPEN.qsize()):
         request.finished()
         print("No solution found after ", request.total_search_time(), "ms")
         return
-    
+
     #publish solution
+    request.finished()
+    print("Time: ", request.total_time)
     print("Epsilon: ", request.epsilon)
     print("Path: ")
     print(progress.best_path)
 
     return
-
     eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
 
     while (eps > 1):
