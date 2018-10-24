@@ -1,3 +1,4 @@
+from Graph import Graph
 import time
 import itertools
 import queue as Q
@@ -53,12 +54,12 @@ def improve_path(mat, request, progress):
     DIRs = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
 
     N = len(mat)
-    CLOSED = []
+    CLOSED = set([])
 
     pre = {request.S: request.S}
     epsilon = request.epsilon
 
-    while True:
+    while progress.OPEN.qsize():
         f_value, _ = progress.OPEN.queue[0]
         if progress.costs[request.G]  + epsilon * h[request.G] < f_value:
             break
@@ -67,7 +68,7 @@ def improve_path(mat, request, progress):
         f_value, s = progress.OPEN.get()
         x, y = s
         #CLOSED = CLOSED U s
-        CLOSED.append(s)
+        CLOSED.add(s)
         
         #traverse child of s
         for dx, dy in DIRs:
@@ -126,7 +127,7 @@ def ara_star(mat, request):
     progress.OPEN.put((h[request.S] * request.epsilon, request.S))
 
     progress.goal_found = improve_path(mat, request, progress)
-    if (not progress.OPEN.qsize()):
+    if (progress.OPEN.qsize()):
         request.finished()
         print("No solution found after ", request.total_search_time(), "ms")
         return
@@ -138,18 +139,17 @@ def ara_star(mat, request):
     print("Path: ")
     print(progress.best_path)
 
-    return
     eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
 
-    while (eps > 1):
-        request.epsilon -= 0.5
+    while (request.total_time < request.time_limit and request.epsilon > 0):
+        request.epsilon -= 0.25
         #Move states from INCONS into OPEN
         for incons in progress.INCONS:
             progress.OPEN.put((0, incons))
         progress.INCONS = []
         #Update priorities for all s in OPEN
         OPEN_update = Q.PriorityQueue()
-        for s, f_value in progress.OPEN:
+        for s, f_value in progress.OPEN.queue:
             OPEN_update.put(progress.costs[s] + h[s] * request.epsilon)
         
         progress.OPEN = OPEN_update
@@ -160,6 +160,10 @@ def ara_star(mat, request):
         eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
 
         #publish solution
+        request.finished()
+        if (request.total_time > request.time_limit):
+            return
+        print("Time :", request.total_time)
         print("Epsilon: ", request.epsilon)
         print("Path: ")
         print(progress.best_path)
@@ -171,11 +175,13 @@ if __name__ == "__main__":
     arg_parser.add_argument('input', help = 'input file path')
     arg_parser.add_argument('output', help = 'output file path')
     arg_parser.add_argument('time_limit', help = 'time limit')
+    arg_parser.add_argument('epsilon', help = 'epsilon')
     args = arg_parser.parse_args()
     input_file = args.input
     output_file = args.output
-    time_limit = args.time_limit
-    
+    time_limit = float(args.time_limit)
+    epsilon = float(args.epsilon)
+
     # read input
     with open(input_file, 'r') as fin:
         N = int(fin.readline())
@@ -189,7 +195,6 @@ if __name__ == "__main__":
     h = {(x, y): Euclide_dist((x, y), (Sx, Sy)) for x, y in itertools.product(range(N), range(N))}
 
     # run A*
-    epsilon = 2
     request = Request((Sx, Sy), (Gx, Gy), time_limit, epsilon)
     ara_star(map_mat, request)
 
