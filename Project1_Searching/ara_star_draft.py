@@ -62,7 +62,7 @@ def improve_path(mat, request, progress):
 
     while progress.OPEN.qsize():
         f_value, _ = progress.OPEN.queue[0]
-        if progress.costs[request.G]  + epsilon * h[request.G] < f_value:
+        if progress.costs[request.G]  + epsilon * h[request.G] <= f_value:
             break
 
         #remove s with smallest fvalue from OPEN
@@ -103,17 +103,8 @@ def improve_path(mat, request, progress):
 Find min INCONS U OPEN (g + h)
 """
 def min_g_h(progress):
-    if (progress.OPEN.qsize()):
-        min_g_h_OPEN = min(progress.costs[s] + h[s] for _, s in progress.OPEN.queue)
-    else:
-        min_g_h_OPEN = INF
-
-    if (len(progress.INCONS)):
-        min_g_h_INCONS = min(progress.costs[s] + h[s] for s in progress.INCONS)
-    else:
-        min_g_h_INCONS = INF
-
-    return min(min_g_h_OPEN, min_g_h_INCONS)
+    OPEN_U_INCONS = {s for _, s in progress.OPEN.queue} | progress.INCONS
+    return min(progress.costs[s] + h[s] for s in OPEN_U_INCONS) 
 
 """
 @mat: input matrix 
@@ -131,21 +122,21 @@ def ara_star(mat, request):
 
     progress.goal_found = improve_path(mat, request, progress)
 
-    if not progress.OPEN.qsize():
+    if not progress.goal_found:
         request.finished()
         print("No solution found after ", request.total_search_time(), "ms")
         return
 
+    eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
+
     #publish solution
     request.finished()
     print("Time: ", request.total_time)
-    print("Epsilon: ", request.epsilon)
+    print("Epsilon: ", eps)
     print("Path: ")
     print(progress.best_path)
 
-    eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
-
-    while (request.total_time < request.time_limit and request.epsilon >= 1):
+    while (request.total_time < request.time_limit and eps > 1):
         request.epsilon -= 0.25
         #Move states from INCONS into OPEN
         for incons in progress.INCONS:
@@ -168,10 +159,9 @@ def ara_star(mat, request):
         if (request.total_time > request.time_limit):
             return
         print("Time :", request.total_time)
-        print("Epsilon: ", request.epsilon)
-        if (progress.goal_found):
-            print("Path: ")
-            print(len(progress.best_path))
+        print("Epsilon: ", eps)
+        print("Path: ")
+        print(len(progress.best_path))
     
 if __name__ == "__main__":
     # parse argument
@@ -197,7 +187,7 @@ if __name__ == "__main__":
 
     # heuristic function
     global h
-    h = {(x, y): Euclide_dist((x, y), (Sx, Sy)) for x, y in itertools.product(range(N), range(N))}
+    h = {(x, y): Euclide_dist((x, y), (Gx, Gy)) for x, y in itertools.product(range(N), range(N))}
 
     # run A*
     request = Request((Sx, Sy), (Gx, Gy), time_limit, epsilon)
