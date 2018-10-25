@@ -47,7 +47,7 @@ class Node:
         self.h = h
     def getH(self):
         return self.h
-
+    
     # Parent set/get
     def setParent(self, par):
         self.parent = par
@@ -82,19 +82,18 @@ class Node:
         return self.id < other.id
 
     def reset(self):
-        self.f_value = INF
         self.parent = None
         self.locked = False
+        self.g = INF
+#         self.h = 0
         self.btn.setText('')
         self.bindButton(self.btn)
 
     # confirm that this is opened
     def setOpened(self):
-        self.btn.setText(f'{self.getF():.2f}')
-        self.btn.setStyleSheet(OPEN_COLOR)
+        self.setColor(OPEN_COLOR)
 
     def setClosed(self):
-        self.btn.setText(f'{self.getF():.2f}')
         self.setColor(CLOSED_COLOR)
 
     # lock get/set: true if algorithm is running
@@ -145,3 +144,6 @@ class Node:
         
     def setOnPath(self):
         self.setColor(ON_PATH_COLOR)
+
+    def setText(self, text):
+        self.btn.setText(text)

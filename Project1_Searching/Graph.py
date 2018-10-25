@@ -10,13 +10,13 @@ def Loo(a, b):
 class Graph:
     def loadFromFile(self, fname):
         with open(fname, 'r') as fin:
-            N = self.N = int(fin.readline())
-            S = tuple(map(int, fin.readline().split()))
-            G = tuple(map(int, fin.readline().split()))
+            N = self.N = int(fin.readline().strip())
+            S = tuple(map(int, fin.readline().strip().split()))
+            G = tuple(map(int, fin.readline().strip().split()))
 
             self.nodes = {(i, j): Node((i, j)) for i, j in product(range(N), range(N))}
             
-            map_mat = [fin.readline().split() for i in range(N)]
+            map_mat = [fin.readline().strip().split() for i in range(N)]
 
             for i, j in product(range(N), range(N)):
                 self.nodes[(i, j)].isobstacle = map_mat[i][j] == '1'

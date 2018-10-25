@@ -58,7 +58,7 @@ def improve_path(mat, request, progress):
     pre = {request.S: request.S}
     epsilon = request.epsilon
 
-    while True:
+    while progress.OPEN.qsize():
         f_value, _ = progress.OPEN.queue[0]
         if progress.costs[request.G]  + epsilon * h[request.G] < f_value:
             break
