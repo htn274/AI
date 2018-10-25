@@ -60,13 +60,13 @@ class Solver:
         S = self.graph.getStart()
         G = self.graph.getGoal()
         
-        S.dist = 0
+        S.setG(0)
         pq = queue.PriorityQueue()
         pq.put((0, S))
         while pq.qsize():
-            cur_dist, cur = pq.get()
+            cur_F, cur = pq.get()
 
-            if cur_dist != cur.dist:
+            if cur_F != cur.getF():
                 continue
 
             cur.setClosed()
@@ -81,11 +81,11 @@ class Solver:
                 neighbor = self.graph.nodes[nid]
                 if neighbor.isObstacle:
                     continue
-                if neighbor.dist > cur.dist + 1:
-                    neighbor.dist = cur.dist + 1
+                if neighbor.getF() > cur.getF() + 1:
+                    neighbor.setG(cur.getG() + 1)
                     neighbor.setOpened()
-                    pq.put((neighbor.dist, neighbor))
-                    neighbor.parent = cur
+                    pq.put((neighbor.getF(), neighbor))
+                    neighbor.setParent(cur)
                     yield True
 
         yield False
@@ -94,13 +94,13 @@ class Solver:
         self.graph.lock()
         S = self.graph.getStart()
         G = self.graph.getGoal()
-        S.dist = S.h
+        S.setG(0)
         OPEN = queue.PriorityQueue()
         OPEN.put((S.h, S))
         while OPEN.qsize():
-            cur_dist, cur = OPEN.get()
+            cur_F, cur = OPEN.get()
 
-            if cur_dist != cur.dist:
+            if cur_F != cur.getF():
                 continue
 
             cur.setClosed()
@@ -116,11 +116,12 @@ class Solver:
                 neighbor = self.graph.getNode(x, y)
                 if neighbor.isObstacle():
                     continue
-                if neighbor.dist > cur.dist - cur.h + 1 + neighbor.h:
-                    neighbor.dist = cur.dist - cur.h + 1 + neighbor.h
+                if neighbor.getF() > cur.getF() - cur.h + 1 + neighbor.h:
+#                     neighbor.setF(cur.getF() - cur.h + 1 + neighbor.h)
+                    neighbor.setG(cur.getG() + 1)
                     neighbor.setOpened()
-                    OPEN.put((neighbor.dist, neighbor))
-                    neighbor.parent = cur
+                    OPEN.put((neighbor.getF(), neighbor))
+                    neighbor.setParent(cur)
                     yield True
 
         yield False

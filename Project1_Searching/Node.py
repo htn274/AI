@@ -18,36 +18,63 @@ OPEN_COLOR = BLUE
 
 class Node:
     def __init__(self, id):
-        self.id = id
-        self.dist = INF
+        self.id = id # tuple of (x, y)
+        
+        self.h = 0
+        self.g = INF
+        
         self.parent = None
+        
         self.locked = False
         self.isobstacle = False
+        
         self.start = False
         self.goal = False
+        
         self.btn = None
+        
+    def getF(self, eps = 1):
+        return self.getG() + eps * self.getH()
+    
+    # g get/set
+    def setG(self, g):
+        self.g = g
+    def getG(self):
+        return self.g
 
+    # h get/set
+    def setH(self, h):
+        self.h = h
+    def getH(self):
+        return self.h
+
+    # Parent set/get
+    def setParent(self, par):
+        self.parent = par
+    def getParent(self):
+        return self.parent
+    
+    # isStart get/set
     def setStart(self):
         self.isobstacle = False
         self.start = True
         self.goal = False
         self.setColor(START_COLOR)
-    
     def isStart(self):
         return self.start
 
+    # isGoal get/set
     def setGoal(self):
         self.isobstacle = False
         self.goal = True
         self.start = False
         self.setColor(GOAL_COLOR)
-
     def isGoal(self):
         return self.goal
 
+    # get X, Y (no set's)
     def getX(self):
         return self.id[0]
-
     def getY(self):
         return self.id[1]
     
@@ -55,23 +82,30 @@ class Node:
         return self.id < other.id
 
     def reset(self):
-        self.dist = INF
+        self.f_value = INF
         self.parent = None
         self.locked = False
         self.btn.setText('')
         self.bindButton(self.btn)
 
+    # confirm that this is opened
     def setOpened(self):
-        self.btn.setText(f'{self.dist:.2f}')
+        self.btn.setText(f'{self.getF():.2f}')
         self.btn.setStyleSheet(OPEN_COLOR)
 
     def setClosed(self):
-        self.btn.setText(f'{self.dist:.2f}')
+        self.btn.setText(f'{self.getF():.2f}')
         self.setColor(CLOSED_COLOR)
 
+    # lock get/set: true if algorithm is running
     def lock(self):
         self.locked = True
+    def unlock(self):
+        self.locked = False
+    def isLocked(self):
+        return self.locked
 
+    # called when it's button is pressed
     def changeState(self):
         if not self.isLocked():
             if self.isObstacle():
@@ -82,13 +116,7 @@ class Node:
                 self.setEmpty()
             else:
                 self.setObstacle()
-
-    def isLocked(self):
-        return self.locked
-
-    def unlock(self):
-        self.locked = False
-
+    
     def bindButton(self, but):
         self.btn = but
         if self.isObstacle():
@@ -96,15 +124,16 @@ class Node:
         else:
             self.setColor(EMPTY_COLOR)
             
+    # is obstacle get/set
     def setObstacle(self):
         if not self.isLocked():
             self.isobstacle = True
             self.start = self.goal = False
             self.setColor(OBSTACLE_COLOR)
-
     def isObstacle(self):
         return self.isobstacle
         
+    # set normal cell
     def setEmpty(self):
         if not self.isLocked():
             self.isobstacle = self.start = self.goal = False
