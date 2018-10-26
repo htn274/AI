@@ -1,3 +1,4 @@
+import time as thread_time
 INF = 10 ** 9
 
 RED = "background-color: red"
@@ -28,10 +29,12 @@ class Node:
         self.locked = False
         self.isobstacle = False
         
-        self.start = False
-        self.goal = False
+        self.isstart = False
+        self.isgoal = False
         
         self.btn = None
+
+        self.colorUpdater = None
         
     def getF(self, eps = 1):
         return self.getG() + eps * self.getH()
@@ -57,20 +60,20 @@ class Node:
     # isStart get/set
     def setStart(self):
         self.isobstacle = False
-        self.start = True
-        self.goal = False
+        self.isstart = True
+        self.isgoal = False
         self.setColor(START_COLOR)
     def isStart(self):
-        return self.start
+        return self.isstart
 
     # isGoal get/set
     def setGoal(self):
         self.isobstacle = False
-        self.goal = True
-        self.start = False
+        self.isgoal = True
+        self.isstart = False
         self.setColor(GOAL_COLOR)
     def isGoal(self):
-        return self.goal
+        return self.isgoal
 
     # get X, Y (no set's)
     def getX(self):
@@ -119,31 +122,42 @@ class Node:
     def bindButton(self, but):
         self.btn = but
         if self.isObstacle():
-            self.setColor(OBSTACLE_COLOR)
+            self.setObstacle()
+        elif self.isStart():
+            self.setStart()
+        elif self.isGoal():
+            self.setGoal()
         else:
-            self.setColor(EMPTY_COLOR)
+            self.setEmpty()
             
     # is obstacle get/set
     def setObstacle(self):
         if not self.isLocked():
             self.isobstacle = True
-            self.start = self.goal = False
+            self.isstart = self.isgoal = False
             self.setColor(OBSTACLE_COLOR)
+            
     def isObstacle(self):
         return self.isobstacle
         
     # set normal cell
     def setEmpty(self):
         if not self.isLocked():
-            self.isobstacle = self.start = self.goal = False
+            self.isobstacle = self.isstart = self.isgoal = False
             self.setColor(EMPTY_COLOR)
         
     def setColor(self, color):
-        if self.btn:
-            self.btn.setStyleSheet(color)
+        if self.colorUpdater:
+            self.colorUpdater.updateColor(self, color)
+    def getColor(self):
+        return self.color
         
     def setOnPath(self):
         self.setColor(ON_PATH_COLOR)
 
     def setText(self, text):
         self.btn.setText(text)
+
+    def invalidate(self):
+        return
+        self.btn.repaint()
