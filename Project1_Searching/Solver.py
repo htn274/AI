@@ -150,7 +150,7 @@ class Solver(QThread):
             OPEN = OPEN_update
 
         def min_g_h():
-            OPEN_U_INCONS = {s for _, s in OPEN.queue} | INCONS
+            OPEN_U_INCONS = {s for _, s in OPEN.queue} | set(INCONS)
             return min(s.getF() for s in OPEN_U_INCONS) 
         
         def removePathColor():
