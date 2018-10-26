@@ -91,9 +91,12 @@ class Solver(QThread):
     def publishSolution(self):
         S = self.graph.getStart()
         G = self.graph.getGoal()
-        while G != None:
+        G.setGoal()
+        G = G.getParent()
+        while G and G != S:
             G.setOnPath()
             G = G.parent
+        S.setStart()
 
     
     
