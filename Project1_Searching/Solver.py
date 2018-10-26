@@ -150,17 +150,8 @@ class Solver(QThread):
             OPEN = OPEN_update
 
         def min_g_h():
-            if OPEN.qsize():
-                min_g_h_OPEN = min(s.getF() for _, s in OPEN.queue)
-            else:
-                min_g_h_OPEN = INF
-
-            if len(INCONS):
-                min_g_h_INCONS = min(s.getF() for s in INCONS)
-            else:
-                min_g_h_INCONS = INF
-
-            return min(min_g_h_OPEN, min_g_h_INCONS)
+            OPEN_U_INCONS = {s for _, s in OPEN.queue} | INCONS
+            return min(s.getF() for s in OPEN_U_INCONS) 
         
         def removePathColor():
             S = self.graph.getStart()
@@ -199,7 +190,6 @@ class Solver(QThread):
         while eps > 1:
             removePathColor()
             eps *= 0.9
-
             self.updateEps(eps)
             
             moveInconsToOpen()

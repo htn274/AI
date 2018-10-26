@@ -25,7 +25,7 @@ def A_star(mat, S, G):
     DIRs = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
 
     # heuristic function
-    h = {(x, y): Euclide_dist((x, y), S) for x, y in itertools.product(range(N), range(N))}
+    h = {(x, y): Euclide_dist((x, y), G) for x, y in itertools.product(range(N), range(N))}
     # eh
     g = {S: 0}
     # eh
