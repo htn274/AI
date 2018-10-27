@@ -13,9 +13,9 @@ START_COLOR = GREEN
 GOAL_COLOR = CYAN
 OBSTACLE_COLOR = BLACK
 EMPTY_COLOR = WHITE
-ON_PATH_COLOR = YELLOW
+ONPATH_COLOR = YELLOW
 CLOSED_COLOR = RED
-OPEN_COLOR = BLUE
+OPENED_COLOR = BLUE
 
 class Node:
     def __init__(self, id):
@@ -94,7 +94,7 @@ class Node:
 
     # confirm that this is opened
     def setOpened(self):
-        self.setColor(OPEN_COLOR)
+        self.setColor(OPENED_COLOR)
 
     def setClosed(self):
         self.setColor(CLOSED_COLOR)
@@ -153,7 +153,7 @@ class Node:
         return self.color
         
     def setOnPath(self):
-        self.setColor(ON_PATH_COLOR)
+        self.setColor(ONPATH_COLOR)
 
     def setText(self, text):
         self.btn.setText(text)

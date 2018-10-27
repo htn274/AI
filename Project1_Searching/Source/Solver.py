@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtCore import pyqtSlot, QThread, pyqtSignal
 
 INF = 10 ** 9
-SLEEP_TIME = 0.005
 
 def onNodeClicked(node):
     @pyqtSlot()
@@ -19,6 +18,7 @@ class Solver(QThread):
     colorChanged = pyqtSignal(QPushButton, str)
     epsChanged = pyqtSignal(float)
     timeChanged = pyqtSignal(float)
+    pathChanged = pyqtSignal(int)
     
     def __init__(self, app):
         super(Solver, self).__init__(app)
@@ -32,16 +32,20 @@ class Solver(QThread):
 
     def updateTime(self, elapsedTime):
         self.timeChanged.emit(elapsedTime)
+
+    def updatePath(self, dist):
+        self.pathChanged.emit(dist)
         
     def bindGraph(self, graph, app):
         self.graph = graph
+        self.sleepTime = 0.3 / graph.N
         for node in graph.nodes.values():
             but = app.buttons[node.id]
             node.colorUpdater = self
             node.bindButton(but)
             but.clicked.connect(onNodeClicked(node))
 
-    def C(self, a, b):
+    def Const(self, a, b):
         return 0
     def L2(self, a, b):
         return ((a.getX() - b.getX()) ** 2 + (a.getY() - b.getY()) ** 2) ** 0.5
@@ -58,7 +62,7 @@ class Solver(QThread):
             self.updateTime(totalTime)
             if totalTime > self.time:
                 break
-            thread_time.sleep(SLEEP_TIME)
+            thread_time.sleep(self.sleepTime)
             lastTime = thread_time.time()
         self.publishSolution()
         self.graph.unlock()
@@ -80,7 +84,6 @@ class Solver(QThread):
         
     def reset(self):
         self.running = False
-        thread_time.sleep(0.1)
         self.graph.reset()
         self.graph.getStart().setStart()
         self.graph.getGoal().setGoal()
@@ -91,6 +94,7 @@ class Solver(QThread):
     def publishSolution(self):
         S = self.graph.getStart()
         G = self.graph.getGoal()
+        self.updatePath(G.getG())
         G.setGoal()
         G = G.getParent()
         while G and G != S:
@@ -140,7 +144,6 @@ class Solver(QThread):
 
         self.publishSolution()
         yield False
-    
     
     def ara_star(self):
         def updateHeuristic():
@@ -234,7 +237,7 @@ class Solver(QThread):
         
         while eps > 1:
             removePathColor()
-            eps *= 0.9
+            eps -= 0.1
             self.updateEps(eps)
             
             moveInconsToOpen()
