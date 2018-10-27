@@ -158,15 +158,17 @@ def ara_star(request, fout):
     #g(Goal) = inf; g(Start) = 0
     progress.costs = {request.S : 0}
     progress.costs[request.G] = INF
+    #initialize pre[S] = S
     progress.pre = {request.S: request.S}
+    #insert S to OPEN list with f(S) = h(S) * eps
     progress.OPEN.put((h[request.S] * request.epsilon, request.S))
 
     progress.goal_found = improve_path(request, progress)
 
     if not progress.goal_found:
         request.finished()
-        fout.write("-1")
-        fout.write("Time: " + str(request.total_time))
+        fout.write("Time: " + str(request.total_time) + "\n")
+        fout.write("-1" + "\n")
         #print("No solution found after ", request.total_search_time(), "ms")
         return
 
