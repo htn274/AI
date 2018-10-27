@@ -8,12 +8,13 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 
+INF = 10 ** 9
 class App(QDialog):
     def __init__(self):
         super().__init__()
         self.left = 10
         self.top = 10
-        self.width = 950
+        self.width = 960
         self.height = 1015
         self.cellSize = 50
         self.buttons = dict()
@@ -24,12 +25,14 @@ class App(QDialog):
         self.solver.colorChanged.connect(self.updateColor)
         self.solver.epsChanged.connect(self.updateEps)
         self.solver.timeChanged.connect(self.updateTime)
+        self.solver.pathChanged.connect(self.updatePath)
  
     def initUI(self):
         if self.layout():
             QWidget().setLayout(self.layout())
         self.setFixedSize(self.width, self.height)
         self.createLayout()
+        self.setWindowTitle("ARA* VISUALIZER")
         self.show()
 
     def initBoard(self):
@@ -45,9 +48,7 @@ class App(QDialog):
             for j in range(n):
                 but = QPushButton("", self)
                 but.setFixedSize(self.cellSize, self.cellSize)
-                font = but.font()
-                font.setPointSize(int(self.cellSize * 0.2))
-                but.setFont(font)
+                self.setFontSize(but, int(self.cellSize * 0.2))
                 self.buttons[(i, j)] = but
                 self.boardLayout.addWidget(but, i, j)
 
@@ -57,11 +58,20 @@ class App(QDialog):
 
     @pyqtSlot(float)
     def updateEps(self, newEps):
-        self.curEpsValueLabel.setText(f'{newEps:.3f}')
+        self.curEpsLabel.setText(f'Cur eps: {newEps:.3f}')
 
     @pyqtSlot(float)
     def updateTime(self, elapsedTime):
-        self.curTimeValueLabel.setText(f'{elapsedTime:.3f}')
+        self.curTimeLabel.setText(f'Elapsed time: {elapsedTime:.3f}')
+
+    @pyqtSlot(int)
+    def updatePath(self, dist):
+        self.curPathLabel.setText(f"Best path found: {dist if dist < INF else 'oo'}")
+
+    def setFontSize(self, but, size):
+        font = but.font()
+        font.setPointSize(size)
+        but.setFont(font)
                 
     def createLayout(self):
         mainLayout = QVBoxLayout(self)
@@ -104,6 +114,7 @@ class App(QDialog):
         timeSpinBox = QDoubleSpinBox(self)
         timeSpinBox.setRange(0.1, 1000)
         timeSpinBox.setSingleStep(0.1)
+        timeSpinBox.setValue(1)
         self.timeSpinBox = timeSpinBox
         solverControlLayout.addWidget(timeSpinBox)
 
@@ -111,7 +122,7 @@ class App(QDialog):
         solverControlLayout.addWidget(heuristicLabel)
 
         heuristicBox = QComboBox(self)
-        heuristicBox.addItems(["Loo", "C (Dijkstra)", "L2 (Euclidean)", "L1 (Manhattan)"])
+        heuristicBox.addItems(["Loo", "Const (Dijkstra)", "L2 (Euclidean)", "L1 (Manhattan)"])
         self.heuristicBox = heuristicBox
         solverControlLayout.addWidget(heuristicBox)
         
@@ -130,47 +141,24 @@ class App(QDialog):
         # -----------------------------------
         infoLayout = QHBoxLayout(self)
 
+        curPathLabel = QLabel("Best path found: oo")
+        infoLayout.addWidget(curPathLabel)
+        self.curPathLabel = curPathLabel
+        
         curEpsLabel = QLabel("Cur eps:", self)
-        infoLayout.addWidget(curEpsLabel, 5)
+        infoLayout.addWidget(curEpsLabel)
+        self.curEpsLabel = curEpsLabel
 
-        curEpsValueLabel = QLabel("1", self)
-        infoLayout.addWidget(curEpsValueLabel, 5)
-        self.curEpsValueLabel = curEpsValueLabel
+        curTimeLabel = QLabel("Elapsed time: 0", self)
+        infoLayout.addWidget(curTimeLabel)
+        self.curTimeLabel = curTimeLabel
 
-        curTimeLabel = QLabel("Elapsed time:", self)
-        infoLayout.addWidget(curTimeLabel, 5)
-
-        curTimeValueLabel = QLabel("0", self)
-        infoLayout.addWidget(curTimeValueLabel, 5)
-        self.curTimeValueLabel = curTimeValueLabel
-
-        startNodeInfoButton = QPushButton("Start", self)
-        startNodeInfoButton.setStyleSheet(Node.START_COLOR)
-        infoLayout.addWidget(startNodeInfoButton)
-
-        goalNodeInfoButton = QPushButton("Goal", self)
-        goalNodeInfoButton.setStyleSheet(Node.GOAL_COLOR)
-        infoLayout.addWidget(goalNodeInfoButton)
-
-        emptyNodeInfoButton = QPushButton("Empty", self)
-        emptyNodeInfoButton.setStyleSheet(Node.EMPTY_COLOR)
-        infoLayout.addWidget(emptyNodeInfoButton)
-
-        obstacleNodeInfoButton = QPushButton("Obstacle", self)
-        obstacleNodeInfoButton.setStyleSheet("color: white;" + Node.OBSTACLE_COLOR)
-        infoLayout.addWidget(obstacleNodeInfoButton)
-
-        openedNodeInfoButton = QPushButton("Opened", self)
-        openedNodeInfoButton.setStyleSheet(Node.OPEN_COLOR)
-        infoLayout.addWidget(openedNodeInfoButton)
-        
-        closedNodeInfoButton = QPushButton("Closed", self)
-        closedNodeInfoButton.setStyleSheet(Node.CLOSED_COLOR)
-        infoLayout.addWidget(closedNodeInfoButton)
-        
-        onPathNodeInfoButton = QPushButton("On path", self)
-        onPathNodeInfoButton.setStyleSheet(Node.ON_PATH_COLOR)
-        infoLayout.addWidget(onPathNodeInfoButton)
+        for name in ["Start", "Goal", "Empty", "Obstacle", "Opened", "Closed", "OnPath"]:
+            but = QPushButton(name, self)
+            but.setFixedSize(50, 50)
+            but.setStyleSheet(("color: white;" if name == "Obstacle" else "") + eval(f"Node.{name.upper()}_COLOR"))
+            self.setFontSize(but, 7)
+            infoLayout.addWidget(but, 2)
         
         # ------------------------------------
         mainLayout.addLayout(self.boardLayout)
@@ -197,7 +185,7 @@ class App(QDialog):
         option |= QFileDialog.DontUseNativeDialog
         fname = QFileDialog.getOpenFileName(self, "Load graph", "", "Text files (*.txt | *.in)", options = option)[0]
         self.graph = Graph()
-        self.graph.loadFromFile(fname)
+        self.graph.read(fname)
         self.cellSize = self.width // self.graph.getN()
         self.initUI()
         self.solver.bindGraph(self.graph, self)
