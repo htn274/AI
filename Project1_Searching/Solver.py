@@ -98,6 +98,48 @@ class Solver(QThread):
             G = G.parent
         S.setStart()
 
+    def a_star(self):
+        def updateHeuristic():
+            for node in self.graph.getNodes():
+                node.setH(self.eps * self.heuristic(node, G))
+        S = self.graph.getStart()
+        G = self.graph.getGoal()
+        updateHeuristic()
+        S.setG(0)
+        S.setText(f'{S.getF():.2f}')
+        OPEN = queue.PriorityQueue()
+        OPEN.put((S.h, S))
+        while OPEN.qsize():
+            cur_F, cur = OPEN.get()
+
+            if cur_F != cur.getF():
+                continue
+
+            cur.setClosed()
+
+            print(cur.id)
+            if cur == G:
+                break
+
+            for (dx, dy) in [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]:
+                x, y = cur.getX() + dx, cur.getY() + dy
+                if (x, y) not in product(range(self.graph.N), range(self.graph.N)):
+                    continue
+                neighbor = self.graph.getNode(x, y)
+                if neighbor.isObstacle():
+                    continue
+                print(neighbor.id)
+                if neighbor.getF() > cur.getF() - cur.h + 1 + neighbor.h:
+#                     neighbor.setF(cur.getF() - cur.h + 1 + neighbor.h)
+                    neighbor.setG(cur.getG() + 1)
+                    neighbor.setOpened()
+                    neighbor.setText(f'{neighbor.getF():.2f}')
+                    OPEN.put((neighbor.getF(), neighbor))
+                    neighbor.setParent(cur)
+#                     yield True
+
+        self.publishSolution()
+        yield False
     
     
     def ara_star(self):
@@ -215,46 +257,3 @@ class Solver(QThread):
 
 
 
-# def a_star(self):
-#         def updateHeuristic():
-#             for node in self.graph.getNodes():
-#                 node.setH(self.heuristic(node, G))
-#                 print(node.id, node.getH())
-#         S = self.graph.getStart()
-#         G = self.graph.getGoal()
-#         updateHeuristic()
-#         S.setG(0)
-#         S.setText(f'{S.getF():.2f}')
-#         OPEN = queue.PriorityQueue()
-#         OPEN.put((S.h, S))
-#         while OPEN.qsize():
-#             cur_F, cur = OPEN.get()
-# 
-#             if cur_F != cur.getF():
-#                 continue
-# 
-#             cur.setClosed()
-# 
-#             print(cur.id)
-#             if cur == G:
-#                 break
-# 
-#             for (dx, dy) in [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]:
-#                 x, y = cur.getX() + dx, cur.getY() + dy
-#                 if (x, y) not in product(range(self.graph.N), range(self.graph.N)):
-#                     continue
-#                 neighbor = self.graph.getNode(x, y)
-#                 if neighbor.isObstacle():
-#                     continue
-#                 print(neighbor.id)
-#                 if neighbor.getF() > cur.getF() - cur.h + 1 + neighbor.h:
-# #                     neighbor.setF(cur.getF() - cur.h + 1 + neighbor.h)
-#                     neighbor.setG(cur.getG() + 1)
-#                     neighbor.setOpened()
-#                     neighbor.setText(f'{neighbor.getF():.2f}')
-#                     OPEN.put((neighbor.getF(), neighbor))
-#                     neighbor.setParent(cur)
-# #                     yield True
-# 
-#         self.publishSolution()
-#         yield False

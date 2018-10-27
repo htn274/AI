@@ -9,6 +9,9 @@ INF = 10 ** 9
 def Euclide_dist(a, b):
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
 
+def Loo(a, b):
+    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
 """Infomation of the search request
 @S: start pos
 @G: goal pos
@@ -133,8 +136,9 @@ def ara_star(mat, request):
     request.finished()
     print("Time: ", request.total_time)
     print("Epsilon: ", eps)
+    print(len(progress.best_path))
     print("Path: ")
-    print(progress.best_path)
+    print(progress.best_path[::-1])
 
     while (request.total_time < request.time_limit and eps > 1):
         request.epsilon -= 0.25
@@ -160,8 +164,10 @@ def ara_star(mat, request):
             return
         print("Time :", request.total_time)
         print("Epsilon: ", eps)
-        print("Path: ")
         print(len(progress.best_path))
+        print("Path: ")
+        print(progress.best_path[::-1])
+        
     
 if __name__ == "__main__":
     # parse argument
@@ -187,7 +193,7 @@ if __name__ == "__main__":
 
     # heuristic function
     global h
-    h = {(x, y): Euclide_dist((x, y), (Gx, Gy)) for x, y in itertools.product(range(N), range(N))}
+    h = {(x, y): Loo((x, y), (Gx, Gy)) for x, y in itertools.product(range(N), range(N))}
 
     # run A*
     request = Request((Sx, Sy), (Gx, Gy), time_limit, epsilon)
@@ -198,9 +204,3 @@ if __name__ == "__main__":
 
 
 
-<<<<<<< HEAD:Project1_Searching/ara_star.py
-    
-=======
-
-    
->>>>>>> 0ad3be4044a71bc0e98653f2d1161347e25b7136:Project1_Searching/ara_star_draft.py
