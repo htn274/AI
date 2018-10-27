@@ -1,13 +1,6 @@
 from Node import Node
 from itertools import product
 
-def Euclide_dist(a, b):
-    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
-
-def Loo(a, b):
-    print("hi")
-    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
-
 class Graph:
     def __init__(self, N = 1):
         self.N = N
@@ -15,7 +8,7 @@ class Graph:
         self.nodes[(0, 0)].setStart()
         self.nodes[(N - 1, N - 1)].setGoal()
 
-    def loadFromFile(self, fname):
+    def read(self, fname):
         with open(fname, 'r') as fin:
             N = self.N = int(fin.readline().strip())
             S = tuple(map(int, fin.readline().strip().split()))
