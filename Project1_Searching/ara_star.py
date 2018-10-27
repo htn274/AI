@@ -1,4 +1,3 @@
-from Graph import Graph
 import time
 import itertools
 import queue as Q
@@ -9,7 +8,12 @@ INF = 10 ** 9
 def Euclide_dist(a, b):
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
 
+"""returns the Diagnol distance of (ax, ay) and (bx, by)"""
+def Loo(a, b):
+    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
 """Infomation of the search request
+@mat: matrix input
 @S: start pos
 @G: goal pos
 @time_limit: time to run a*
@@ -18,7 +22,8 @@ def Euclide_dist(a, b):
 @total_time: time result
 """
 class Request:
-    def __init__(self, start, goal, timelimit, eps):
+    def __init__(self, ma, start, goal, timelimit, eps):
+        self.mat = ma
         self.S = start
         self.G = goal
         self.time_limit = timelimit
@@ -26,16 +31,22 @@ class Request:
         self.start_time = 0
         self.total_time = 0
         self.Solutions = []
-
+    #Start timer
     def go(self):
         self.start_time = time.clock()
-
+    #Calculate total time
     def finished(self):
         self.total_time += time.clock() - self.start_time
 
-    def total_search_time(self):
-        return self.total_time
-
+"""
+Information of the progress 
+@goal_found: check whether the Goal can be reached
+@best_path: the most optimal path
+@INCONS
+@OPEN
+@costs: g(x)
+@pre: 
+"""
 class Progress_info:
     def __init__(self):
         self.goal_found = False
@@ -46,17 +57,47 @@ class Progress_info:
         self.pre = {}
     
 """
+Information of the solution
+@time: total time 
+@eps: the last epsilon
+@path: the most optimal path with the last epsilon
+"""
+class Solution:
+    def __init__(self, time, eps, path):
+        self.time = time
+        self.epsilon = eps
+        self.path = path
+
+    def output(self, fout, request):
+        fout.write("Time: " + str(self.time) + "\n")
+        fout.write("Epsilon: " + str(self.epsilon) + "\n")
+        fout.write(str(len(self.path)) + "\n")
+        fout.write(' '.join(list(f'({x},{y})' for (x, y) in self.path)) + '\n')
+        N = len(request.mat)
+        for x in range(N):
+                for y in range(N):
+                    if (x, y) == request.S:
+                        fout.write('S')
+                    elif (x, y) == request.G:
+                        fout.write('G')
+                    elif (x, y) in self.path:
+                        fout.write('x')
+                    else:
+                        fout.write('-' if request.mat[x][y] == 0 else 'o')
+                fout.write('\n')
+        
+"""
 @mat: input matrix 
 @request: 
 @progress: infomation of current progress
 """
-def improve_path(mat, request, progress):
+def improve_path(request, progress):
     # node opening order
     DIRs = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
 
+    mat = request.mat
     N = len(mat)
     CLOSED = set([])
-    pre = progress.pre
 
     epsilon = request.epsilon
 
@@ -79,19 +120,18 @@ def improve_path(mat, request, progress):
                 and mat[x + dx][y + dy] != 1\
                 and progress.costs[s] + 1 < progress.costs.get(neighbor_node, INF):
                     progress.costs[neighbor_node] = progress.costs[s] + 1
-                    pre[neighbor_node] = s
+                    progress.pre[neighbor_node] = s
                     if (neighbor_node not in CLOSED):
                         progress.OPEN.put((progress.costs[neighbor_node] + epsilon * h[neighbor_node], neighbor_node))
                     else:
                         progress.INCONS.add(neighbor_node)
-    progress.pre = pre
     
-    if request.G not in pre:
+    if request.G not in progress.pre:
         return False
     path = [request.G]
     node = request.G
     while node != request.S:
-        node = pre[node]
+        node = progress.pre[node]
         path.append(node)
 
     if (path != progress.best_path):
@@ -106,35 +146,40 @@ def min_g_h(progress):
     OPEN_U_INCONS = {s for _, s in progress.OPEN.queue} | progress.INCONS
     return min(progress.costs[s] + h[s] for s in OPEN_U_INCONS) 
 
+
 """
 @mat: input matrix 
 @request: search request
 """
-def ara_star(mat, request):
+def ara_star(request, fout):
     request.go()
     
     progress = Progress_info()
     #g(Goal) = inf; g(Start) = 0
     progress.costs = {request.S : 0}
     progress.costs[request.G] = INF
+    #initialize pre[S] = S
     progress.pre = {request.S: request.S}
+    #insert S to OPEN list with f(S) = h(S) * eps
     progress.OPEN.put((h[request.S] * request.epsilon, request.S))
 
-    progress.goal_found = improve_path(mat, request, progress)
+    progress.goal_found = improve_path(request, progress)
 
     if not progress.goal_found:
         request.finished()
-        print("No solution found after ", request.total_search_time(), "ms")
+        fout.write("Time: " + str(request.total_time) + "\n")
+        fout.write("-1" + "\n")
+        #print("No solution found after ", request.total_search_time(), "ms")
         return
 
     eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
 
     #publish solution
     request.finished()
-    print("Time: ", request.total_time)
-    print("Epsilon: ", eps)
-    print("Path: ")
-    print(progress.best_path)
+    """
+    sol = Solution(request.total_time, eps, progress.best_path[::-1])
+    sol.output(fout)
+    """
 
     while (request.total_time < request.time_limit and eps > 1):
         request.epsilon -= 0.25
@@ -146,23 +191,21 @@ def ara_star(mat, request):
         OPEN_update = Q.PriorityQueue()
         for f_value, s in progress.OPEN.queue:
             OPEN_update.put((progress.costs[s] + h[s] * request.epsilon, s))
-        
         progress.OPEN = OPEN_update
-
         #Improve path
-        progress.goal_found = improve_path(mat, request, progress)
+        progress.goal_found = improve_path(request, progress)
         #get new epsilon
         eps = min(request.epsilon, progress.costs[request.G]/min_g_h(progress))
 
         #publish solution
         request.finished()
-        if (request.total_time > request.time_limit):
-            return
-        print("Time :", request.total_time)
-        print("Epsilon: ", eps)
-        print("Path: ")
-        print(len(progress.best_path))
-    
+        """
+        sol = Solution(request.total_time, eps, progress.best_path[::-1])
+        sol.output(fout)
+        """
+    sol = Solution(request.total_time, eps, progress.best_path[::-1])
+    sol.output(fout, request)
+
 if __name__ == "__main__":
     # parse argument
     # to get input & output paths & timelimit
@@ -187,20 +230,16 @@ if __name__ == "__main__":
 
     # heuristic function
     global h
-    h = {(x, y): Euclide_dist((x, y), (Gx, Gy)) for x, y in itertools.product(range(N), range(N))}
+    h = {(x, y): Loo((x, y), (Gx, Gy)) for x, y in itertools.product(range(N), range(N))}
 
     # run A*
-    request = Request((Sx, Sy), (Gx, Gy), time_limit, epsilon)
-    ara_star(map_mat, request)
+    with open(output_file, "w") as fout:
+        request = Request(map_mat, (Sx, Sy), (Gx, Gy), time_limit, epsilon)
+        ara_star(request, fout)
 
 
 
 
 
 
-<<<<<<< HEAD:Project1_Searching/ara_star.py
-    
-=======
 
-    
->>>>>>> 0ad3be4044a71bc0e98653f2d1161347e25b7136:Project1_Searching/ara_star_draft.py
