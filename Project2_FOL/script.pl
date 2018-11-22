@@ -162,11 +162,7 @@ brother(Person, Sibling):-
 sister(Person, Sibling):-
     female(Person),
     sibling(Person, Sibling).
-
-/* Definition of Aunt:
-1. The sister of one's father or mother
-2. The wife of one's uncle */
-
+    
 aunt(Person, NieceNewphew):-
     parent(Parent, NieceNewphew),
     sister(Person, Parent).
@@ -175,10 +171,6 @@ aunt(Person, NieceNewphew):-
     parent(Parent, NieceNewphew),
     brother(Husband, Parent),
     husband(Husband, Person).
-
-/*Definiton of Uncle:
-1. The brother of one's mother or father.
-2, The husband of one's aunt.*/
 
 uncle(Person, NieceNewphew):-
     parent(Parent, NieceNewphew),
