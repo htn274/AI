@@ -152,8 +152,8 @@ sibling(Person1, Person2):-
     father(Father, Person1),
     father(Father, Person2),
     mother(Mother, Person1),
-    mother(Mother, Person2),
-    Person1 \= Person2.
+    mother(Mother, Person2).
+
 
 brother(Person, Sibling):-
     male(Person),
