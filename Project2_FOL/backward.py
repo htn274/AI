@@ -1,7 +1,10 @@
 from collections import defaultdict
 import itertools
+import sys
+sys.setrecursionlimit(1000000)
 
-uni_preds = defaultdict(set)
+uni_facts = defaultdict(set)
+uni_preds = []
 universe = set()
 
 def getName(rule):
@@ -28,41 +31,52 @@ class Rule:
         self.name = getName(rule)
         self.preds = getPreds(rule)
         self.args = getArgs(rule)
+        self.arg_vars = [arg for arg in self.args if isVariable(arg)]
         self.vars = set(var for var in self.args + list(itertools.chain(*[pred.vars for pred in self.preds])) if isVariable(var))
+        self.cached = None
+
+    def __repr__(self):
+        return f'{self.name} {self.args} {self.vars}'
         
-    # return list of submaps
-    def getSubs(self):
-        # dom[x] = set of values x can take
-        dom = defaultdict(lambda: universe.copy())
-        
-        for pred in self.preds:
-            sub_maps = pred.getSubs()
-            for var in pred.vars:
-                dom[var] &= set(sub[var] for sub in sub_maps)
-
-        sub_maps = []
-        # unify
-        for sub in itertools.product(*[dom[var] for var in self.vars]):
-            sub_map = {x:y for x, y in zip(self.vars, sub)}
-            if self.check(sub_map):
-                sub_maps.append(sub_map)
-
-        return sub_maps
-
-    def activate(self):
-        added = False
-        subs = self.getSubs()
-        for sub in set(tuple(sub.get(x, x) for x in self.args) for sub in subs):
-            if sub not in uni_preds[self.name]:
-                added = True
-                uni_preds[self.name].add(sub)
-        return added
+    # return set of tuples of subtitutes
+    def getSubsInFacts(self):
+        subs = set()
+        for sub in itertools.product(universe, repeat = len(self.arg_vars)):
+            sub_map = {x: y for x, y in zip(self.arg_vars, sub)}
+            v = tuple(sub_map.get(arg, arg) for arg in self.args)
+            if v in uni_facts[self.name]:
+                subs.add(v)
+#         print('RULE', 'getSubsInFact', self.name, subs)
+        return subs
 
     def check(self, sub_map):
         return all(pred.check(sub_map) for pred in self.preds)
     
-    def __lt__(self, other):
-        return self.name in set(pred.name for pred in other.preds)
+    # return set of submaps
+    def getSubsByPreds(self):
+        # dom[x] = set of values x can take
+        dom = defaultdict(lambda: universe.copy())
+        
+        for pred in self.preds:
+            subs = pred.getSubs()
+            for i, var in enumerate(pred.vars):
+                dom[var] &= set(sub[i] for sub in subs)
+
+#         print('RULE', 'getSubsByPreds', self.name, 'DOM', *[(x, dom[x]) for x in dom.keys()])
+        subs = set()
+        # unify
+        for sub in itertools.product(*[dom[var] for var in self.vars]):
+            sub_map = {x:y for x, y in zip(self.vars, sub)}
+            if self.check(sub_map):
+                subs.add(tuple(sub_map.get(arg, arg) for arg in self.args))
+
+#         print('RULE', 'getSubsByPred', self.name, subs)
+        return subs
+
+    def getSubs(self):
+        if self.cached == None:
+            self.cached = self.getSubsInFacts() | self.getSubsByPreds()
+        return self.cached
 
 def getPredNVars(pred):
     ls = pred.replace('(', ' ').replace(')', ' ').replace(',', ' ').split()
@@ -71,24 +85,40 @@ def getPredNVars(pred):
 class Predicate:
     def __init__(self, pred):
         self.name, self.vars = getPredNVars(pred)
-#         print(self.name, self.vars)
+        self.args = getArgs(pred)
+        self.cached = None
+        uni_preds.append(self)
+        self.unifiable_rules = []
+
+    def __repr__(self):
+        return f'{self.name} {self.args}'
+    
+    def checkInFacts(self, subs):
+        return tuple(subs.get(arg, arg) for arg in self.args) in uni_facts[self.name]
     
     def check(self, subs):
-        vars = self.vars[:]
-        for i, var in enumerate(vars):
-            vars[i] = subs.get(var, var)
-
-        return tuple(vars) in uni_preds[self.name]
+        return tuple(subs.get(arg, arg) for arg in self.args) in self.getSubs()
 
     # returns a list of submap for this pred
-    def getSubs(self):
-        sub_maps = []
+    def getSubsInFacts(self):
+        subs = set()
         for sub in itertools.product(universe, repeat = len(self.vars)):
             sub_map = {x: y for x, y in zip(self.vars, sub)}
-            if self.check(sub_map):
-                sub_maps.append(sub_map)
-#                 print(self.name, sub_map)
-        return sub_maps
+            if self.checkInFacts(sub_map):
+                subs.add(tuple(sub_map.get(var, var) for var in self.vars))
+#         print('PRED', 'getSubsInFact', self.name, subs)
+        return subs
+        
+    def getSubsInRules(self):
+        subs = set()
+        for rule in self.unifiable_rules:
+            subs.update(rule.getSubs())
+        return subs
+
+    def getSubs(self):
+        if self.cached == None:
+            self.cached = self.getSubsInFacts() | self.getSubsInRules()
+        return self.cached
 
 class Fact:
     def __init__(self, fact):
@@ -102,12 +132,18 @@ class Fact:
         for sub in itertools.product(universe, repeat = len(self.vars)):
             sub_map = {x: y for x, y in zip(self.vars, sub)}
             v = tuple(sub_map.get(arg, arg) for arg in self.args)
-            uni_preds[self.name].add(v)
+            uni_facts[self.name].add(v)
 
 def isVariable(s):
     return s[0].isupper() or s[0] == '_'
 
-rules = []
+def unifiable(pred, rule):
+    return pred.name == rule.name\
+            and len(pred.args) == len(rule.args)\
+            and all(isVariable(pa) == isVariable(ra) or isVariable(pa)\
+                for pa, ra in zip(pred.args, rule.args))
+            
+uni_rules = []
 facts = []
 def readKB():
     with open('script.pl') as fin:
@@ -115,7 +151,7 @@ def readKB():
         lines = lines.replace('\n', '').replace(' ', '').replace('.', ' ').split()
         for line in lines:
             if ':-' in line:
-                rules.append(Rule(line))
+                uni_rules.append(Rule(line))
             else:
                 fact = Fact(line)
                 universe.update(fact.insts)
@@ -124,25 +160,25 @@ def readKB():
 def buildKB():
     for fact in facts:
         fact.activate()
-        
-    expanded = True
-    rules.sort()
-    for rule in rules:
-        rule.activate()
-#     while expanded:
-#         expanded = False
-#         for rule in rules:
-#             expanded = expanded or rule.activate()
 
+#     print(*[fact for fact in uni_facts], sep='\n')
+    for pred, rule in itertools.product(uni_preds, uni_rules):
+        if unifiable(pred, rule):
+            pred.unifiable_rules.append(rule)
+        
 def serve():
-    while True:
-        question = Rule("dummy(x):-" + input('?- '))
-        subs = question.getSubs()
-        if subs:
-            print(*subs, sep = '\n')
-        print(len(subs) > 0)
+    pred = Predicate("grandfather(X, Y).")
+    for rule in uni_rules:
+        if unifiable(pred, rule):
+            pred.unifiable_rules.append(rule)
+    print(*pred.getSubs(), sep='\n')
+#     while True:
+#         question = Rule("dummy(x):-" + input('?- '))
+#         subs = question.getSubs()
+#         if subs:
+#             print(*subs, sep = '\n')
+#         print(len(subs) > 0)
         
 readKB()
 buildKB()
-# print(*[(x, len(uni_preds[x])) for x in uni_preds.keys()])
 serve()
