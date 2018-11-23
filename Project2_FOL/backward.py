@@ -80,7 +80,7 @@ class Rule:
 
 def getPredNVars(pred):
     ls = pred.replace('(', ' ').replace(')', ' ').replace(',', ' ').split()
-    return ls[0], ls[1:]
+    return ls[0], [var for var in ls[1:] if isVariable(var)]
 
 class Predicate:
     def __init__(self, pred):
@@ -105,7 +105,7 @@ class Predicate:
         for sub in itertools.product(universe, repeat = len(self.vars)):
             sub_map = {x: y for x, y in zip(self.vars, sub)}
             if self.checkInFacts(sub_map):
-                subs.add(tuple(sub_map.get(var, var) for var in self.vars))
+                subs.add(tuple(sub_map.get(var, var) for var in self.args))
 #         print('PRED', 'getSubsInFact', self.name, subs)
         return subs
         
@@ -134,6 +134,14 @@ class Fact:
             v = tuple(sub_map.get(arg, arg) for arg in self.args)
             uni_facts[self.name].add(v)
 
+class Question:
+    def __init__(self, question):
+        self.pred = Predicate(question)
+        self.pred.unifiable_rules = [rule for rule in uni_rules if unifiable(self.pred, rule)]
+
+    def getAns(self):
+        return list(map(lambda sub: {x:y for x, y in zip(self.pred.vars, sub)}, self.pred.getSubs()))
+    
 def isVariable(s):
     return s[0].isupper() or s[0] == '_'
 
@@ -167,17 +175,15 @@ def buildKB():
             pred.unifiable_rules.append(rule)
         
 def serve():
-    pred = Predicate("grandfather(X, Y).")
-    for rule in uni_rules:
-        if unifiable(pred, rule):
-            pred.unifiable_rules.append(rule)
-    print(*pred.getSubs(), sep='\n')
-#     while True:
-#         question = Rule("dummy(x):-" + input('?- '))
-#         subs = question.getSubs()
-#         if subs:
-#             print(*subs, sep = '\n')
-#         print(len(subs) > 0)
+    while True:
+        try:
+            question = Question(input('?- '))
+            subs = question.getAns()
+            if subs:
+                print(*subs, sep = '\n')
+            print(len(subs) > 0)
+        except:
+            break
         
 readKB()
 buildKB()
