@@ -126,7 +126,6 @@ def buildKB():
         fact.activate()
         
     expanded = True
-    rules.sort()
     for rule in rules:
         rule.activate()
 #     while expanded:
