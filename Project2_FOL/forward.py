@@ -144,5 +144,6 @@ def serve():
         
 readKB()
 buildKB()
+# print(sum(len(x) for x in uni_preds.values()))
 # print(*[(x, len(uni_preds[x])) for x in uni_preds.keys()])
 serve()
