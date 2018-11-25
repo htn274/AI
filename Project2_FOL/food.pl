@@ -1,9 +1,34 @@
+person(P).
+ingredient(I).
+dish(D).
+contains(D, I).
+event(E).
+allergy(P, I).
+sweat(I).
+sour(I).
+salty(I).
+spicy(I).
+meat(I).
+seafood(I).
+vegetables(I).
+drink(D).
+alcoholic(D).
+cook_method(CM).
+cook_method(D, CM).
+vegetarian(P).
+recommended_together(D1, D2).
+dish_in_event(D, E).
+ingredient_in_event(I, E).
+invited(E, P).
+cant_eat(P, D):-ingredient(I), contains(D, I), allergy(P, I).
+cant_join_event(P, E):-dish(D), dish_in_event(D, E), cant_eat(P, D).
+sad_party(E):-person(P), invited(E, P), cant_join_event(P, E).
+
+
 person(bao).
 person(nu).
 person(cuong).
 person(duy).
-
-cooker(bao).
 
 ingredient(salt).
 ingredient(sugar).
@@ -39,7 +64,7 @@ dish(cake).
 event(birthday).
 event(wedding).
 event(family).
-event(
+
 contains(fried_egg, egg).
 contains(fried_egg, salt).
 contains(fried_egg, pepper).
