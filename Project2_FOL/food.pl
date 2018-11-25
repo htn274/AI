@@ -19,10 +19,15 @@ vegetarian(P).
 recommended_together(D1, D2).
 dish_in_event(D, E).
 ingredient_in_event(I, E).
+drink_in_event(D, E).
 invited(E, P).
 cant_eat(P, D):-ingredient(I), contains(D, I), allergy(P, I).
-cant_join_event(P, E):-dish(D), dish_in_event(D, E), cant_eat(P, D).
-sad_party(E):-person(P), invited(E, P), cant_join_event(P, E).
+cant_eat(P, D):-vegetarian(P), contains(D, I), meat(I).
+cant_eat(P, D):-vegetarian(P), contains(D, I), seafood(I).
+cant_drink(P, D).
+cant_join(P, E):-dish(D), dish_in_event(D, E), cant_eat(P, D).
+not_fun_party(E):-person(P), invited(E, P), cant_join(P, E).
+not_fun_party(E):-person(P), invited(E, P), drink(D), alcoholic(D), drink_in_event(D, E), cant_drink(P, D).
 
 
 person(bao).
