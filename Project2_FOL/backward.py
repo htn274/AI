@@ -190,7 +190,7 @@ class Question(Rule):
         self.cont = Rule(q)
 
     def getAns(self):
-        return list(map(lambda sub: {x:y for x, y in zip(self.cont.vars, sub) if isVariable(x)}, self.cont.getSubs()))
+        return list(map(lambda sub: {x:y for x, y in zip(self.cont.args, sub) if isVariable(x)}, self.cont.getSubs()))
     
 facts = []
 def readKB():
