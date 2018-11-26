@@ -8,8 +8,8 @@ uni_preds = []
 universe = set()
 uni_rules = []
 
-commonSubs = defaultdict(set)
-commonForwardList = defaultdict(set)
+common_subs = defaultdict(set)
+common_forward_list = defaultdict(set)
 
 def getName(rule):
     return rule[:rule.index('(')]
@@ -89,8 +89,8 @@ class Rule:
         self.arg_vars = set(self.args) & set(self.vars)
         
         id = getNormId(self)
-        self.subs = commonSubs[id]
-        self.forward_list = commonForwardList[id]
+        self.subs = common_subs[id]
+        self.forward_list = common_forward_list[id]
         
         for pred_rule in uni_preds + uni_rules:
             if forwardable(pred_rule, self):
@@ -126,13 +126,12 @@ class Rule:
 class Predicate:
     def __init__(self, pred):
         self.name = getName(pred)
-        self.vars = getVars(pred)
-        self.vars = set(self.vars)
+        self.vars = set(getVars(pred))
         self.args = getArgs(pred)
         
         id = getNormId(self)
-        self.subs = commonSubs[id]
-        self.forward_list = commonForwardList[id]
+        self.subs = common_subs[id]
+        self.forward_list = common_forward_list[id]
 
         for pred_rule in uni_preds + uni_rules:
             if forwardable(pred_rule, self):
@@ -147,6 +146,15 @@ class Predicate:
     
     def check(self, sub_map):
         return tuple(sub_map.get(arg, arg) for arg in self.args) in uni_facts[self.name]
+    
+    def getSubsInFacts(self):
+        subs = set()
+        for sub in itertools.product(universe, repeat = len(self.vars)):
+            sub_map = {x: y for x, y in zip(self.vars, sub)}
+            v = tuple(sub_map.get(arg, arg) for arg in self.args)
+            if v in uni_facts[self.name]:
+                subs.add(v)
+        return subs
     
     def activate(self):
         next = []
@@ -182,7 +190,7 @@ class Question(Rule):
         self.cont = Predicate(content)
 
     def getAns(self):
-        return list(map(lambda sub: {x:y for x, y in zip(self.cont.vars, sub) if isVariable(x)}, self.cont.subs))
+        return list(map(lambda sub: {x:y for x, y in zip(self.cont.args, sub) if isVariable(x)}, self.cont.getSubsInFacts()))
     
 facts = []
 def readKB():

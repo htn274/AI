@@ -88,6 +88,7 @@ class Rule:
         for pred in uni_preds:
             if delegable(pred, self):
                 pred.delegable_rules.append(self)
+        self.locked = False
 
     def __repr__(self):
         return f'<RULE {self.name} {self.args} {self.vars} {self.preds}>'
@@ -119,10 +120,13 @@ class Rule:
         return subs
 
     def getSubs(self):
+        if self.locked:
+            return self.getSubsInFacts()
+        self.locked = True
         id = getNormId(self)
         if id not in uni_subs:
             uni_subs[id] = self.getSubsInFacts() | self.getSubsByPreds()
-#             print('>> RULE getSubs', id, uni_subs[id])
+        self.locked = False
         return uni_subs[id]
 
 class Predicate:
@@ -133,6 +137,7 @@ class Predicate:
         self.args = getArgs(pred)
         uni_preds.append(self)
         self.delegable_rules = [rule for rule in uni_rules.values() if delegable(self, rule)]
+        self.locked = False
 
     def __repr__(self):
         return f'<PRED {self.name} {self.args}>'
@@ -165,9 +170,13 @@ class Predicate:
         return subs
 
     def getSubs(self):
+        if self.locked:
+            return self.getSubsInFacts()
+        self.locked = True
         id = getNormId(self)
         if id not in uni_subs:
             uni_subs[id] = self.getSubsInFacts() | self.getSubsInRules()
+        self.locked = False
         return uni_subs[id]
 
 class Fact:
@@ -186,11 +195,13 @@ class Fact:
 class Question(Rule):
     def __init__(self, content):
         q = 'q():-' + content
-        q = str(id(q)) + '(' + ','.join(Rule(q).vars) + '):-' + content
+        import uuid
+        q = str(uuid.uuid4()) + '(' + ','.join(Rule(q).vars) + '):-' + content
+#         print(q)
         self.cont = Rule(q)
 
     def getAns(self):
-        return list(map(lambda sub: {x:y for x, y in zip(self.cont.vars, sub) if isVariable(x)}, self.cont.getSubs()))
+        return list(map(lambda sub: {x:y for x, y in zip(self.cont.args, sub) if isVariable(x)}, self.cont.getSubs()))
     
 facts = []
 def readKB():
