@@ -215,5 +215,5 @@ def serve():
         
 readKB()
 buildKB()
-
+# print(uni_preds)
 serve()
