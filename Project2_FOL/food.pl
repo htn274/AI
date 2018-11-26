@@ -1,7 +1,9 @@
 person(P).
+chef(P).
+place(P).
+source(I, P).
 ingredient(I).
 dish(D).
-contains(D, I).
 event(E).
 allergy(P, I).
 sweat(I).
@@ -11,6 +13,7 @@ spicy(I).
 meat(I).
 seafood(I).
 vegetables(I).
+fruit(F).
 drink(D).
 alcoholic(D).
 cook_method(CM).
@@ -19,15 +22,33 @@ vegetarian(P).
 recommended_together(D1, D2).
 dish_in_event(D, E).
 ingredient_in_event(I, E).
+ingredient_in_dish(I, D).
 drink_in_event(D, E).
+chef_in_event(C, E).
 invited(E, P).
-cant_eat(P, D):-ingredient(I), contains(D, I), allergy(P, I).
-cant_eat(P, D):-vegetarian(P), contains(D, I), meat(I).
-cant_eat(P, D):-vegetarian(P), contains(D, I), seafood(I).
+cant_eat(P, D):-ingredient(I), contains(D, I), allergy(P, I); vegetarian(P), contains(D, I), meat(I); vegetarian(P), contains(D, I), seafood(I).
 cant_drink(P, D).
 cant_join(P, E):-dish(D), dish_in_event(D, E), cant_eat(P, D).
-not_fun_party(E):-person(P), invited(E, P), cant_join(P, E).
-not_fun_party(E):-person(P), invited(E, P), drink(D), alcoholic(D), drink_in_event(D, E), cant_drink(P, D).
+not_fun_party(E):-person(P), invited(E, P), cant_join(P, E); person(P), invited(E, P), drink(D), alcoholic(D), drink_in_event(D, E), cant_drink(P, D).
+same_ingredient_events(I, E1, E2).
+same_ingredients_event(I1, I2, E).
+same_ingredient_dishes(I, E1, E2).
+same_ingredients_dish(I1, I2, D).
+same_dish_events(D, E1, E2).
+same_dishes_event(D1, D2, E).
+high_grade_ingredient(I).
+high_grade_dish(D).
+high_grade_event(E).
+high_grade_drink(D).
+same_chefs_dish(C1, C2, D).
+same_chef_dishes(C, D1, D2).
+same_chef_events(C, E1, E2).
+same_chefs_event(C1, C2, E).
+same_source_ingredients(S, I1, I2).
+same_source_dishes(S, D1, D2).
+same_sources_dish(S1, S2, D).
+same_source_events(S, E1, E2).
+same_sources_event(S1, S2, E).
 
 
 person(bao).
