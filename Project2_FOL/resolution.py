@@ -136,8 +136,8 @@ class Clause:
         self.preds = rule.preds 
         for pred in self.preds:
             pred.set_not()
-        pred = rule.convertPred()
-        preds.append(pred)
+        pred = rule.convert_pred()
+        self.preds.append(pred)
     
     def remove_pred(self, pred):
         while pred in self.preds:
@@ -153,6 +153,7 @@ class Predicate:
         self.name = getName(pred)
         self.vars = set(getVars(pred))
         self.args = getArgs(pred)
+        self.is_negated = False
         
         id = getNormId(self)
         self.subs = common_subs[id]
@@ -237,6 +238,11 @@ def removeall(pred, clause):
     clause.remove_pred(pred)
     return clause
 
+def check_dual(pred_1, pred_2):
+    if pred_1.is_negated == pred_2.is_negated:
+        return False
+    return pred_1.arg == pred_2.arg and pred_1.name == pred_2.name
+
 # c1, c2: Clause
 # return: clause can obtain by resolving c1 and c2
 def resolve(c1, c2):
@@ -275,4 +281,15 @@ def resolution(alpha):
 
 readKB()
 buildKB()
-print(uni_preds)
+
+# print(uni_preds)
+# Test Clause
+rule = input()
+rule = Rule(rule)
+clause = Clause(rule)
+for pred in clause.preds:
+    print(pred.name, pred.is_negated)
+rule = input()
+rule = Rule(rule)
+clause = Clause(rule)
+print(clause.preds)
