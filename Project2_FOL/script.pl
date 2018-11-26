@@ -183,15 +183,19 @@ uncle(Person, NieceNewphew) :-
 
 niece(Person, AuntUncle) :-
     female(Person),
-    (aunt(AuntUncle, Person);
-    uncle(AuntUncle, Person)).
+    aunt(AuntUncle, Person).
+
+niece(Person, AuntUncle) :-
+    female(Person),
+    uncle(AuntUncle, Person).
+            
+nephew(Person, AuntUncle) :-
+    male(Person), 
+    aunt(AuntUncle, Person).
 
 nephew(Person, AuntUncle) :-
     male(Person), 
-    (aunt(AuntUncle, Person);
-    uncle(AuntUncle, Person)).
-
-
+    uncle(AuntUncle, Person).
 
 
 

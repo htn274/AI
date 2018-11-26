@@ -149,21 +149,14 @@ class Predicate:
     
     def getSubsInFacts(self):
         subs = set()
-        for sub in itertools.product(universe, repeat = len(self.vars)):
-            sub_map = {x: y for x, y in zip(self.vars, sub)}
-            v = tuple(sub_map.get(arg, arg) for arg in self.args)
-            if v in uni_facts[self.name]:
-                subs.add(v)
+        for val in uni_facts[self.name]:
+            if all(isVariable(arg) or arg == v for arg, v in zip(self.args, val)):
+                subs.add(val)
         return subs
     
     def activate(self):
         next = []
-        for sub in itertools.product(universe, repeat = len(self.vars)):
-            sub_map = {x: y for x, y in zip(self.vars, sub)}
-            v = tuple(sub_map.get(arg, arg) for arg in self.args)
-            if v in uni_facts[self.name]:
-                if v not in self.subs:
-                    self.subs.add(v)
+        self.subs.update(self.getSubsInFacts())
                 
         for pred_rule in self.forward_list:
             if not (pred_rule.subs >= self.subs):
@@ -223,5 +216,5 @@ def serve():
         
 readKB()
 buildKB()
-
+# print(sum(len(x) for x in uni_facts.values()))
 serve()
