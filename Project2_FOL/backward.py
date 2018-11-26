@@ -96,11 +96,9 @@ class Rule:
     # return set of tuples of subtitutes
     def getSubsInFacts(self):
         subs = set()
-        for sub in itertools.product(universe, repeat = len(self.vars)):
-            sub_map = {x: y for x, y in zip(self.vars, sub)}
-            v = tuple(sub_map.get(arg, arg) for arg in self.args)
-            if v in uni_facts[self.name]:
-                subs.add(v)
+        for val in uni_facts[self.name]:
+            if all(isVariable(arg) or arg == v for arg, v in zip(self.args, val)):
+                subs.add(val)
         return subs
 
     def check(self, sub_map):
@@ -156,11 +154,9 @@ class Predicate:
 
     def getSubsInFacts(self):
         subs = set()
-        for sub in itertools.product(universe, repeat = len(self.vars)):
-            sub_map = {x: y for x, y in zip(self.vars, sub)}
-            v = tuple(sub_map.get(arg, arg) for arg in self.args)
-            if v in uni_facts[self.name]:
-                subs.add(v)
+        for val in uni_facts[self.name]:
+            if all(isVariable(arg) or arg == v for arg, v in zip(self.args, val)):
+                subs.add(val)
         return subs
         
     def getSubsInRules(self):
