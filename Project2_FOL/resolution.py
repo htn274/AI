@@ -170,9 +170,17 @@ def main(filename):
             self.cont = Predicate(content)
 
         def getAns(self):
-            return list(map(lambda sub: {x:y for x, y in zip(self.cont.args, sub) if isVariable(x)}, self.cont.getSubsInFacts()))
+            ans = []
+            content = self.cont
+            for sub in itertools.product(universe, repeat = len(content.vars)):
+                sub_map = {x: y for x, y in zip(content.vars, sub)}
+                tmp = content
+                pred = tmp.sub(sub_map)
+                if resolution(pred):
+                    ans.append(sub_map)
+            return ans
+            # return list(map(lambda sub: {x:y for x, y in zip(self.cont.args, sub) if isVariable(x)}, self.cont.getSubsInFacts()))
         
-
     def readKB():
         import sys
         with open(filename, 'r') as fin:
@@ -216,7 +224,6 @@ def main(filename):
     # KB: clause list, alpha: predicate 
     # return whether alpha follow KB
     def resolution(alpha):
-        #KB and ~alpha
         clauses = copy.deepcopy(uni_clauses)
 
         alpha.set_not()
@@ -233,16 +240,17 @@ def main(filename):
                 new_clauses.update(resolvents)
 
             if set(new_clauses.keys()).issubset(set(clauses.keys())):
-            # if all(any(n_clause == o_clauses for o_clauses in clauses) for n_clause in new_clauses):
                 return False
-            # for c in new_clauses:
-            #     if c not in clauses:
-            #         clauses.append(c)
             clauses.update(new_clauses)
         
+    def serve():
+        while True:
+            question = Question(input('?- '))
+            subs = question.getAns()
+            if subs:
+                print(*subs, sep = '\n')
+            print(len(subs) > 0)
 
     readKB()
     buildKB()
-
-    print(uni_clauses)
-    print(resolution(Predicate('animal(dog)')))
+    serve()
