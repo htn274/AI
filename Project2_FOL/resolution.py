@@ -197,7 +197,7 @@ def main(filename):
     def buildKB():
         for fact in uni_facts:
             universe.update(fact.insts)
-
+            
         for c in uni_facts + uni_rules:
             uni_clauses.update(c.toClauses()) 
 

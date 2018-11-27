@@ -197,29 +197,6 @@ nephew(Person, AuntUncle) :-
     male(Person), 
     uncle(AuntUncle, Person).
 
-/*
-Bộ câu hỏi:
-1. male(X).
-2. child(harry, charles).
-3. father(X, isla).
-4. married(diana, charles).
-5. husband(X, anne).
-6. divorced(edward).
-7. findall(X, son(X, elizabeth), Son).
-8. findall(X, child(X, william), Children).
-9. findall(X, daughter(X, autum), Daughter).
-10. findall(X, grandchild(X, anne), GrandChildren).
-11. grandfather(X, james).
-12. grandmother(X, miagrace).
-13. aunt(X, savannah).
-14. findall(X, sibling(andrew, X), Siblings).
-15. findall(X, aunt(eugeine, X), NieceNephew).
-16. aunt(beatrice, james).
-17. uncle(X, william), unclce(X, perter_phillips).
-18. findall(X, (granddaughter(X, phillip), not(married(X, Y)), FA_granddaughter)).
-19. grandfather(X, miagrace), grandfather(X, george).
-20. findall(X, brother(X, zara), Brother).
-*/
 
 
 
