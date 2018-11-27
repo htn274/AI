@@ -202,7 +202,7 @@ def main(filename):
         
     facts = []
     def readKB():
-        with open('script.pl') as fin:
+        with open(filename) as fin:
             lines = ''.join(fin.readlines())
             lines = lines.replace('\n', '').replace(' ', '').replace('.', ' ').split()
             for line in lines:
