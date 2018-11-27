@@ -104,6 +104,20 @@ def main(filename):
         def __repr__(self):
             return f'<RULE {self.name} {self.args} {self.vars} {self.preds}>'
             
+        def getSubsInFacts(self):
+            subs = set()
+            
+            pred_subs = [pred.getSubsInFacts() for pred in self.preds]
+
+            for pred_sub in itertools.product(*pred_subs):
+                var_subs = set(list(itertools.chain(*[[(x, y) for x, y in zip(pred.args, sub) if isVariable(x)] for pred, sub in zip(self.preds, pred_sub)])))
+                if len(var_subs) == len(self.vars):
+                    sub_map = {x:y for x, y in var_subs}
+                    v = tuple(sub_map.get(arg, arg) for arg in self.args)
+                    subs.add(v)
+            
+            return subs
+        
         def activate(self):
             next = []
             pred_subs = [pred.subs for pred in self.preds]
@@ -123,7 +137,6 @@ def main(filename):
                     pred_rule.subs.update(self.subs)
             
             return next
-        
         
     class Predicate:
         def __init__(self, pred):
@@ -184,7 +197,10 @@ def main(filename):
 
     class Question(Rule):
         def __init__(self, content):
-            self.cont = Predicate(content)
+            q = 'q():-' + content
+            import uuid
+            q = str(uuid.uuid4()) + '(' + ','.join(Rule(q).vars) + '):-' + content
+            self.cont = Rule(q)
 
         def getAns(self):
             return list(map(lambda sub: {x:y for x, y in zip(self.cont.args, sub) if isVariable(x)}, self.cont.getSubsInFacts()))
