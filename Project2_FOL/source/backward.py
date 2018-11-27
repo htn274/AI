@@ -163,7 +163,10 @@ def main(filename):
         def getSubsInRules(self):
             subs = set()
             for rule in self.delegable_rules:
-                subs.update(newRuleWithLessVars(self, rule).getSubs())
+                rule_sub = newRuleWithLessVars(self, rule).getSubs()
+                for sub in rule_sub:
+                    if all(isVariable(p) or p == s for p, s in zip(self.args, sub)):
+                        subs.add(sub)
             return subs
 
         def getSubs(self):
