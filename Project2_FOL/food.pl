@@ -166,9 +166,9 @@ ingredient_in_dish(potato, beefsteak).
 ingredient_in_dish(beef, salad).
 ingredient_in_dish(shrimp, salad).
 ingredient_in_dish(chicken, salad).
-ingredient_in_event(tomato, salad).
+ingredient_in_dish(tomato, salad).
 ingredient_in_dish(peanut, salad).
-ingredient_in_event(vinegar, salad).
+ingredient_in_dish(vinegar, salad).
 
 ingredient_in_event(I, E):-dish(D), dish_in_event(D, E), ingredient_in_dish(I, D).
 
