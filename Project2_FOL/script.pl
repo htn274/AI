@@ -202,6 +202,3 @@ nephew(Person, AuntUncle) :-
 
 
 
-
-
-

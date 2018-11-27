@@ -1,75 +1,33 @@
-person(P).
-chef(P).
-place(P).
-source(I, P).
-ingredient(I).
-dish(D).
-event(E).
-allergy(P, I).
-sweat(I).
-sour(I).
-salty(I).
-spicy(I).
-meat(I).
-seafood(I).
-vegetables(I).
-fruit(F).
-drink(D).
-alcoholic(D).
-cook_method(CM).
-cook_method(D, CM).
-vegetarian(P).
-recommended_together(D1, D2).
-dish_in_event(D, E).
-ingredient_in_event(I, E).
-ingredient_in_dish(I, D).
-drink_in_event(D, E).
-chef_in_event(C, E).
-invited(E, P).
-cant_eat(P, D):-ingredient(I), contains(D, I), allergy(P, I); vegetarian(P), contains(D, I), meat(I); vegetarian(P), contains(D, I), seafood(I).
-cant_drink(P, D).
-cant_join(P, E):-dish(D), dish_in_event(D, E), cant_eat(P, D).
-not_fun_party(E):-person(P), invited(E, P), cant_join(P, E); person(P), invited(E, P), drink(D), alcoholic(D), drink_in_event(D, E), cant_drink(P, D).
-same_ingredient_events(I, E1, E2).
-same_ingredients_event(I1, I2, E).
-same_ingredient_dishes(I, E1, E2).
-same_ingredients_dish(I1, I2, D).
-same_dish_events(D, E1, E2).
-same_dishes_event(D1, D2, E).
-high_grade_ingredient(I).
-high_grade_dish(D).
-high_grade_event(E).
-high_grade_drink(D).
-same_chefs_dish(C1, C2, D).
-same_chef_dishes(C, D1, D2).
-same_chef_events(C, E1, E2).
-same_chefs_event(C1, C2, E).
-same_source_ingredients(S, I1, I2).
-same_source_dishes(S, D1, D2).
-same_sources_dish(S1, S2, D).
-same_source_events(S, E1, E2).
-same_sources_event(S1, S2, E).
-
-
 person(bao).
 person(nu).
 person(cuong).
 person(duy).
+person(theanh).
+person(hy).
+
+chef(bao).
+chef(nu).
+chef(hy).
+
+place(vietnam).
+place(japan).
+place(china).
 
 ingredient(salt).
 ingredient(sugar).
 ingredient(pepper).
 ingredient(soy_sauce).
 ingredient(fish_sauce).
-ingredient(cooking_oil).
+ingredient(olive_oil).
 ingredient(butter).
 ingredient(vinegar).
-
 ingredient(garlic).
 ingredient(onion).
 ingredient(chili).
-ingredient(chiken).
+ingredient(chicken).
+ingredient(beef).
 ingredient(fish).
+ingredient(shrimp).
 ingredient(pork).
 ingredient(water).
 ingredient(coconut).
@@ -80,55 +38,216 @@ ingredient(tomato).
 ingredient(potato).
 ingredient(wine).
 ingredient(flour).
+ingredient(lemon).
+
+source(beef, japan).
+source(fish, vietnam).
+source(pork, vietnam).
+source(egg, china).
+source(X, china):-vegetables(X).
 
 dish(fried_egg).
 dish(fried_fish).
+dish(cake).
 dish(poached_fish).
 dish(poached_pork_and_egg).
-dish(cake).
+dish(salad).
+dish(beefsteak).
 
 event(birthday).
+event(family_meeting).
 event(wedding).
-event(family).
 
-contains(fried_egg, egg).
-contains(fried_egg, salt).
-contains(fried_egg, pepper).
-contains(fried_egg, butter).
-contains(fried_egg, fish_sauce).
-contains(fried_egg, tomato).
+allergy(cuong, fish).
+allergy(hy, salt).
 
-contains(poached_fish, fish).
-contains(poached_fish, fish_sauce).
-contains(poached_fish, onion).
-contains(poached_fish, pepper).
-contains(poached_fish, water).
-contains(poached_fish, sugar).
+sweat(sugar).
+sweat(coconut).
 
-contains(poached_pork_and_egg, pork).
-contains(poached_pork_and_egg, egg).
-contains(poached_pork_and_egg, water).
-contains(poached_pork_and_egg, soy_sauce).
-contains(poached_pork_and_egg, fish_sauce).
-contains(poached_pork_and_egg, sugar).
-contains(poached_pork_and_egg, pepper).
-contains(poached_pork_and_egg, coconut).
-contains(poached_pork_and_egg, onion).
-contains(poached_pork_and_egg, ginger).
-contains(poached_pork_and_egg, vinegar).
-contains(poached_pork_and_egg, wine).
-contains(poached_pork_and_egg, cooking_oil).
+sour(vinegar).
+sour(tomato).
 
-contains(fried_fish, fish).
-contains(fried_fish, cooking_oil).
-contains(fried_fish, garlic).
-contains(fried_fish, fish_sauce).
-contains(fried_fish, vinegar).
-contains(fried_fish, chili).
-contains(fried_fish, pepper).
+salty(salt).
+salty(fish_sauce).
+salty(soy_sauce).
 
-contains(cake, flour).
-contains(cake, egg).
-contains(cake, water).
-contains(cake, sugar).
-contains(cacke, milk).
+spicy(chili).
+spicy(pepper).
+spicy(ginger).
+
+meat(pork).
+meat(beef).
+meat(chicken).
+
+seafood(fish).
+seafood(shrimp).
+
+vegetables(potato).
+vegetables(onion).
+vegetables(chili).
+vegetables(garlic).
+vegetables(ginger).
+vegetables(peanut).
+
+fruit(coconut).
+fruit(lemon).
+fruit(tomato).
+
+drink(soda).
+drink(water).
+drink(beer).
+drink(wine).
+drink(strongbow).
+
+alcoholic(beer).
+alcoholic(wine).
+alcoholic(strongbow).
+
+vegetarian(hy).
+vegetarian(theanh).
+
+recommended_together(fried_fish, salad).
+recommended_together(cake, fried_fish).
+recommended_together(poached_pork_and_egg, salad).
+recommended_together(beefsteak, salad).
+recommended_together(D1, D2):-recommended_together(D2, D1).
+
+dish_in_event(cake, birthday).
+dish_in_event(fried_fish, birthday).
+dish_in_event(salad, birthday).
+dish_in_event(fried_egg, family_meeting).
+dish_in_event(fried_fish, family_meeting).
+dish_in_event(poached_fish, family_meeting).
+dish_in_event(poached_pork_and_egg, family_meeting).
+dish_in_event(salad, family_meeting).
+dish_in_event(fried_fish, wedding).
+dish_in_event(salad, wedding).
+dish_in_event(beefsteak, wedding).
+
+ingredient_in_dish(egg, fried_egg).
+ingredient_in_dish(salt, fried_egg).
+ingredient_in_dish(pepper, fried_egg).
+ingredient_in_dish(butter, fried_egg).
+ingredient_in_dish(fish_sauce, fried_egg).
+ingredient_in_dish(tomato, fried_egg).
+
+ingredient_in_dish(fish, poached_fish).
+ingredient_in_dish(fish_sauce, poached_fish).
+ingredient_in_dish(onion, poached_fish).
+ingredient_in_dish(pepper, poached_fish).
+ingredient_in_dish(water, poached_fish).
+ingredient_in_dish(sugar, poached_fish).
+
+ingredient_in_dish(pork, poached_pork_and_egg).
+ingredient_in_dish(egg, poached_pork_and_egg).
+ingredient_in_dish(water, poached_pork_and_egg).
+ingredient_in_dish(soy_sauce, poached_pork_and_egg).
+ingredient_in_dish(fish_sauce, poached_pork_and_egg).
+ingredient_in_dish(sugar, poached_pork_and_egg).
+ingredient_in_dish(pepper, poached_pork_and_egg).
+ingredient_in_dish(coconut, poached_pork_and_egg).
+ingredient_in_dish(onion, poached_pork_and_egg).
+ingredient_in_dish(ginger, poached_pork_and_egg).
+ingredient_in_dish(vinegar, poached_pork_and_egg).
+ingredient_in_dish(wine, poached_pork_and_egg).
+ingredient_in_dish(olive_oil, poached_pork_and_egg).
+
+ingredient_in_dish(fish, fried_fish).
+ingredient_in_dish(olive_oil, fried_fish).
+ingredient_in_dish(garlic, fried_fish).
+ingredient_in_dish(fish_sauce, fried_fish).
+ingredient_in_dish(vinegar, fried_fish).
+ingredient_in_dish(chili, fried_fish).
+ingredient_in_dish(pepper, fried_fish).
+
+ingredient_in_dish(flour, cake).
+ingredient_in_dish(egg, cake).
+ingredient_in_dish(water, cake).
+ingredient_in_dish(sugar, cake).
+
+ingredient_in_dish(beef, beefsteak).
+ingredient_in_event(olive_oil, beefsteak).
+ingredient_in_event(garlic, beefsteak).
+ingredient_in_dish(potato, beefsteak).
+
+ingredient_in_event(I, E):-dish(D), dish_in_event(D, E), ingredient_in_dish(I, D).
+
+drink_in_event(soda, wedding).
+drink_in_event(soda, family_meeting).
+drink_in_event(soda, birthday).
+drink_in_event(water, wedding).
+drink_in_event(water, family_meeting).
+drink_in_event(water, birthday).
+drink_in_event(beer, wedding).
+drink_in_event(beer, birthday).
+drink_in_event(wine, wedding).
+drink_in_event(strongbow, family_meeting).
+
+chef_in_event(bao, family_meeting).
+chef_in_event(nu, birthday).
+chef_in_event(hy, wedding).
+chef_in_event(bao, wedding).
+chef_in_event(nu, family_meeting).
+
+invited(birthday, bao).
+invited(birthday, cuong).
+invited(birthday, theanh).
+invited(wedding, nu).
+invited(wedding, duy).
+invited(wedding, hy).
+invited(family_meeting, bao).
+invited(family_meeting, cuong).
+invited(family_meeting, nu).
+invited(family_meeting, theanh).
+
+cant_eat(P, D):-ingredient(I), ingredient_in_dish(D, I), allergy(P, I).
+cant_eat(P, D):-vegetarian(P), ingredient_in_dish(D, I), meat(I).
+cant_eat(P, D):-vegetarian(P), ingredient_in_dish(D, I), seafood(I).
+
+cant_drink(duy, wine).
+cant_drink(bao, water).
+cant_drink(nu, strongbow).
+
+cant_join(P, E):-dish(D), dish_in_event(D, E), cant_eat(P, D).
+
+not_fun_party(E):-person(P), invited(E, P), cant_join(P, E).
+not_fun_party(E):-person(P), invited(E, P), drink(D), alcoholic(D), drink_in_event(D, E), cant_drink(P, D).
+
+same_ingredient_events(I, E1, E2):-ingredient_in_event(I, E1), ingredient_in_event(I, E2).
+
+same_ingredients_event(I1, I2, E):-ingredient_in_event(I1, E), ingredient_in_event(I2, E).
+
+same_ingredient_dishes(I, D1, D2):-ingredient_in_dish(I, D1), ingredient_in_dish(I, D2).
+
+same_ingredients_dish(I1, I2, D):-ingredient_in_dish(I1, D), ingredient_in_dish(I2, D).
+
+same_dish_events(D, E1, E2):-dish_in_event(D, E1), dish_in_event(D, E2).
+
+same_dishes_event(D1, D2, E):-dish_in_event(D1, E), dish_in_event(D2, E).
+
+high_grade_ingredient(I):-source(I, japan).
+
+high_grade_dish(D):-ingredient_in_dish(I, D), high_grade_ingredient(I).
+
+high_grade_event(E):-dish_in_event(D, E), high_grade_dish(D).
+
+high_grade_drink(water).
+high_grade_drink(strongbow).
+
+same_chef_events(C, E1, E2):-chef_in_event(C, E1), chef_in_event(C, E2).
+
+same_chefs_event(C1, C2, E):-chef_in_event(C1, E), chef_in_event(C2, E).
+
+same_source_ingredients(S, I1, I2):-source(I1, S), source(I2, S).
+
+source_in_dish(S, D):-ingredient(I), source(I, S), ingredient_in_dish(I, D).
+
+same_source_dishes(S, D1, D2):-source_in_dish(S, D1), source_in_dish(S, D2).
+
+same_sources_dish(S1, S2, D):-source_in_dish(S1, D), source_in_dish(S2, D).
+
+source_in_event(S, E):-ingredient(I), source(I, S), ingredient_in_event(I, E).
+
+same_source_events(S, E1, E2):-source_in_event(S, E1), source_in_event(S, E2).
+
+same_sources_event(S1, S2, E):-source_in_event(S1, E), source_in_event(S2, E).
