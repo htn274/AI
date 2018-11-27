@@ -248,7 +248,10 @@ def main(filename):
         
     def serve():
         while True:
-            question = Question(input('?- '))
+            question = input('?- ')
+            if question == 'halt':
+                break
+            question = Question(question)
             subs = question.getAns()
             if subs:
                 print(*subs, sep = '\n')
@@ -258,4 +261,3 @@ def main(filename):
     buildKB()
     serve()
 
-main("script.pl")
