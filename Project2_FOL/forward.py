@@ -95,15 +95,10 @@ def main(filename):
             
             for pred_rule in uni_preds + uni_rules:
                 if forwardable(pred_rule, self):
-<<<<<<< HEAD
                     pred_rule.forward_list.add(self)
                 if forwardable(self, pred_rule):
-                    self.forward_list.add(self)
-=======
-                    pred_rule.forward_list.add(id)
-                if forwardable(self, pred_rule):
-                    self.forward_list.add(id)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
+                    self.forward_list.add(pred_rule)
+
             uni_rules.append(self)
 
         def __repr__(self):
@@ -142,15 +137,9 @@ def main(filename):
 
             for pred_rule in uni_preds + uni_rules:
                 if forwardable(pred_rule, self):
-<<<<<<< HEAD
                     pred_rule.forward_list.add(self)
                 if forwardable(self, pred_rule):
-                    self.forward_list.add(self)
-=======
-                    pred_rule.forward_list.add(id)
-                if forwardable(self, pred_rule):
-                    self.forward_list.add(id)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
+                    self.forward_list.add(pred_rule)
             
             uni_preds.append(self)
 
@@ -172,11 +161,6 @@ def main(filename):
             self.subs.update(self.getSubsInFacts())
                     
             for pred_rule in self.forward_list:
-<<<<<<< HEAD
-#                 print(self.subs)
-#                 print(pred_rule.subs)
-=======
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
                 if not (pred_rule.subs >= self.subs):
                     next.append(pred_rule)
                     pred_rule.subs.update(self.subs)
@@ -189,11 +173,8 @@ def main(filename):
             self.args = getArgs(fact)
             self.vars = set(arg for arg in self.args if isVariable(arg))
             self.insts = set(arg for arg in self.args if not isVariable(arg))
-<<<<<<< HEAD
         def __repr__(self):
             return f'<FACT {self.name} {self.args}>'
-=======
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
         
         def activate(self):
             for sub in itertools.product(universe, repeat = len(self.vars)):
@@ -231,14 +212,10 @@ def main(filename):
 
     def serve():
         while True:
-<<<<<<< HEAD
-            question = Question(input('?- '))
-=======
             question = input('?- ')
             if question == 'halt':
                 break
             question = Question(question)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
             subs = question.getAns()
             if subs:
                 print(*subs, sep = '\n')
@@ -246,8 +223,4 @@ def main(filename):
             
     readKB()
     buildKB()
-<<<<<<< HEAD
-=======
-    # print(uni_preds)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
     serve()
