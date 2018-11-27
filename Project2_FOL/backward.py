@@ -194,7 +194,6 @@ def main(filename):
             q = 'q():-' + content
             import uuid
             q = str(uuid.uuid4()) + '(' + ','.join(Rule(q).vars) + '):-' + content
-    #         print(q)
             self.cont = Rule(q)
 
         def getAns(self):

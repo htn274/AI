@@ -95,20 +95,29 @@ def main(filename):
             
             for pred_rule in uni_preds + uni_rules:
                 if forwardable(pred_rule, self):
-<<<<<<< HEAD
                     pred_rule.forward_list.add(self)
                 if forwardable(self, pred_rule):
-                    self.forward_list.add(self)
-=======
-                    pred_rule.forward_list.add(id)
-                if forwardable(self, pred_rule):
-                    self.forward_list.add(id)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
+                    self.forward_list.add(pred_rule)
+
             uni_rules.append(self)
 
         def __repr__(self):
             return f'<RULE {self.name} {self.args} {self.vars} {self.preds}>'
             
+        def getSubsInFacts(self):
+            subs = set()
+            
+            pred_subs = [pred.getSubsInFacts() for pred in self.preds]
+
+            for pred_sub in itertools.product(*pred_subs):
+                var_subs = set(list(itertools.chain(*[[(x, y) for x, y in zip(pred.args, sub) if isVariable(x)] for pred, sub in zip(self.preds, pred_sub)])))
+                if len(var_subs) == len(self.vars):
+                    sub_map = {x:y for x, y in var_subs}
+                    v = tuple(sub_map.get(arg, arg) for arg in self.args)
+                    subs.add(v)
+            
+            return subs
+        
         def activate(self):
             next = []
             pred_subs = [pred.subs for pred in self.preds]
@@ -129,7 +138,6 @@ def main(filename):
             
             return next
         
-        
     class Predicate:
         def __init__(self, pred):
             self.name = getName(pred)
@@ -142,15 +150,9 @@ def main(filename):
 
             for pred_rule in uni_preds + uni_rules:
                 if forwardable(pred_rule, self):
-<<<<<<< HEAD
                     pred_rule.forward_list.add(self)
                 if forwardable(self, pred_rule):
-                    self.forward_list.add(self)
-=======
-                    pred_rule.forward_list.add(id)
-                if forwardable(self, pred_rule):
-                    self.forward_list.add(id)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
+                    self.forward_list.add(pred_rule)
             
             uni_preds.append(self)
 
@@ -172,11 +174,6 @@ def main(filename):
             self.subs.update(self.getSubsInFacts())
                     
             for pred_rule in self.forward_list:
-<<<<<<< HEAD
-#                 print(self.subs)
-#                 print(pred_rule.subs)
-=======
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
                 if not (pred_rule.subs >= self.subs):
                     next.append(pred_rule)
                     pred_rule.subs.update(self.subs)
@@ -200,7 +197,10 @@ def main(filename):
 
     class Question(Rule):
         def __init__(self, content):
-            self.cont = Predicate(content)
+            q = 'q():-' + content
+            import uuid
+            q = str(uuid.uuid4()) + '(' + ','.join(Rule(q).vars) + '):-' + content
+            self.cont = Rule(q)
 
         def getAns(self):
             return list(map(lambda sub: {x:y for x, y in zip(self.cont.args, sub) if isVariable(x)}, self.cont.getSubsInFacts()))
@@ -228,14 +228,10 @@ def main(filename):
 
     def serve():
         while True:
-<<<<<<< HEAD
-            question = Question(input('?- '))
-=======
             question = input('?- ')
             if question == 'halt':
                 break
             question = Question(question)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
             subs = question.getAns()
             if subs:
                 print(*subs, sep = '\n')
@@ -243,8 +239,4 @@ def main(filename):
             
     readKB()
     buildKB()
-<<<<<<< HEAD
-=======
-    # print(uni_preds)
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
     serve()
