@@ -189,11 +189,8 @@ def main(filename):
             self.args = getArgs(fact)
             self.vars = set(arg for arg in self.args if isVariable(arg))
             self.insts = set(arg for arg in self.args if not isVariable(arg))
-<<<<<<< HEAD
         def __repr__(self):
             return f'<FACT {self.name} {self.args}>'
-=======
->>>>>>> 11b04fba8511bb504d133de54cc6708ec5cadc74
         
         def activate(self):
             for sub in itertools.product(universe, repeat = len(self.vars)):

@@ -168,6 +168,7 @@ def main(filename):
     class Question(Rule):
         def __init__(self, content):
             self.cont = Predicate(content)
+            # self.cont = Rule("q:-" + content).toClauses()
 
         def getAns(self):
             ans = []
