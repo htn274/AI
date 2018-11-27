@@ -193,9 +193,9 @@ invited(birthday, theanh).
 invited(wedding, duy).
 invited(family_meeting, cuong).
 
-cant_eat(P, D):-ingredient(I), ingredient_in_dish(D, I), allergy(P, I).
-cant_eat(P, D):-vegetarian(P), ingredient_in_dish(D, I), meat(I).
-cant_eat(P, D):-vegetarian(P), ingredient_in_dish(D, I), seafood(I).
+cant_eat(P, D):-ingredient(I), ingredient_in_dish(I, D), allergy(P, I).
+cant_eat(P, D):-vegetarian(P), ingredient_in_dish(I, D), meat(I).
+cant_eat(P, D):-vegetarian(P), ingredient_in_dish(I, D), seafood(I).
 
 cant_drink(duy, wine).
 cant_drink(bao, water).
