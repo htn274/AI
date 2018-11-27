@@ -254,3 +254,5 @@ def main(filename):
     readKB()
     buildKB()
     serve()
+
+main("script.pl")
