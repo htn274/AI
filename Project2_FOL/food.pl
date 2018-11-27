@@ -65,6 +65,7 @@ sweat(sugar).
 sweat(coconut).
 
 sour(vinegar).
+sour(lemon).
 sour(tomato).
 
 salty(salt).
@@ -106,12 +107,6 @@ alcoholic(strongbow).
 vegetarian(hy).
 vegetarian(theanh).
 
-recommended_together(fried_fish, salad).
-recommended_together(cake, fried_fish).
-recommended_together(poached_pork_and_egg, salad).
-recommended_together(beefsteak, salad).
-recommended_together(D1, D2):-recommended_together(D2, D1).
-
 dish_in_event(cake, birthday).
 dish_in_event(fried_fish, birthday).
 dish_in_event(salad, birthday).
@@ -148,9 +143,7 @@ ingredient_in_dish(pepper, poached_pork_and_egg).
 ingredient_in_dish(coconut, poached_pork_and_egg).
 ingredient_in_dish(onion, poached_pork_and_egg).
 ingredient_in_dish(ginger, poached_pork_and_egg).
-ingredient_in_dish(vinegar, poached_pork_and_egg).
 ingredient_in_dish(wine, poached_pork_and_egg).
-ingredient_in_dish(olive_oil, poached_pork_and_egg).
 
 ingredient_in_dish(fish, fried_fish).
 ingredient_in_dish(olive_oil, fried_fish).
@@ -166,9 +159,16 @@ ingredient_in_dish(water, cake).
 ingredient_in_dish(sugar, cake).
 
 ingredient_in_dish(beef, beefsteak).
-ingredient_in_event(olive_oil, beefsteak).
-ingredient_in_event(garlic, beefsteak).
+ingredient_in_dish(olive_oil, beefsteak).
+ingredient_in_dish(garlic, beefsteak).
 ingredient_in_dish(potato, beefsteak).
+
+ingredient_in_dish(beef, salad).
+ingredient_in_dish(shrimp, salad).
+ingredient_in_dish(chicken, salad).
+ingredient_in_event(tomato, salad).
+ingredient_in_dish(peanut, salad).
+ingredient_in_event(vinegar, salad).
 
 ingredient_in_event(I, E):-dish(D), dish_in_event(D, E), ingredient_in_dish(I, D).
 
@@ -189,16 +189,9 @@ chef_in_event(hy, wedding).
 chef_in_event(bao, wedding).
 chef_in_event(nu, family_meeting).
 
-invited(birthday, bao).
-invited(birthday, cuong).
 invited(birthday, theanh).
-invited(wedding, nu).
 invited(wedding, duy).
-invited(wedding, hy).
-invited(family_meeting, bao).
 invited(family_meeting, cuong).
-invited(family_meeting, nu).
-invited(family_meeting, theanh).
 
 cant_eat(P, D):-ingredient(I), ingredient_in_dish(D, I), allergy(P, I).
 cant_eat(P, D):-vegetarian(P), ingredient_in_dish(D, I), meat(I).
@@ -210,8 +203,8 @@ cant_drink(nu, strongbow).
 
 cant_join(P, E):-dish(D), dish_in_event(D, E), cant_eat(P, D).
 
-not_fun_party(E):-person(P), invited(E, P), cant_join(P, E).
-not_fun_party(E):-person(P), invited(E, P), drink(D), alcoholic(D), drink_in_event(D, E), cant_drink(P, D).
+not_fun_event(E):-invited(E, P), cant_join(P, E).
+not_fun_event(E):-invited(E, P), drink(D), alcoholic(D), drink_in_event(D, E), cant_drink(P, D).
 
 same_ingredient_events(I, E1, E2):-ingredient_in_event(I, E1), ingredient_in_event(I, E2).
 
@@ -230,9 +223,6 @@ high_grade_ingredient(I):-source(I, japan).
 high_grade_dish(D):-ingredient_in_dish(I, D), high_grade_ingredient(I).
 
 high_grade_event(E):-dish_in_event(D, E), high_grade_dish(D).
-
-high_grade_drink(water).
-high_grade_drink(strongbow).
 
 same_chef_events(C, E1, E2):-chef_in_event(C, E1), chef_in_event(C, E2).
 
