@@ -41,7 +41,7 @@ def main(filename):
     def delegable(pred, rule):
         if pred.name == rule.name\
                 and len(pred.args) == len(rule.args)\
-                and all((isVariable(pa) and isVariable(ra)) or (not isVariable(pa) and not isVariable(ra) and pa == ra) or (isVariable(ra) and not isVariable(pa))\
+                and all(not (not isVariable(pa) and not isVariable(ra) and pa != ra)\
                 for pa, ra in zip(pred.args, rule.args)):
             return True
         return False
