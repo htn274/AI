@@ -176,6 +176,7 @@ def main(filename):
                 sub_map = {x: y for x, y in zip(content.vars, sub)}
                 tmp = content
                 pred = tmp.sub(sub_map)
+                # print(pred)
                 if resolution(pred):
                     ans.append(sub_map)
             return ans
@@ -196,7 +197,7 @@ def main(filename):
     def buildKB():
         for fact in uni_facts:
             universe.update(fact.insts)
-
+            
         for c in uni_facts + uni_rules:
             uni_clauses.update(c.toClauses()) 
 
@@ -216,7 +217,7 @@ def main(filename):
         for pred_i in c1.preds:
             for pred_j in c2.preds:
                 if check_dual(pred_i, pred_j):
-                    clause_new = removeall(pred_i, c1) + removeall(pred_j, c2)
+                    clause_new = removeall(pred_i, Clause(c1.preds.copy()) ) + removeall(pred_j, Clause(c2.preds.copy()) )
                     clause_result[getId(clause_new)] = clause_new
 
         return clause_result
@@ -234,8 +235,10 @@ def main(filename):
         while True:
             n = len(clauses)
             for (ci, cj) in itertools.combinations(clauses.values(), 2):
+                # print(ci, cj, end = ' ')
                 resolvents = resolve(ci, cj)
-                if "" in resolvents:
+                # print(resolvents)
+                if "" in resolvents.keys():
                     return True
                 new_clauses.update(resolvents)
 
@@ -245,7 +248,10 @@ def main(filename):
         
     def serve():
         while True:
-            question = Question(input('?- '))
+            question = input('?- ')
+            if question == 'halt':
+                break
+            question = Question(question)
             subs = question.getAns()
             if subs:
                 print(*subs, sep = '\n')
@@ -254,3 +260,4 @@ def main(filename):
     readKB()
     buildKB()
     serve()
+
