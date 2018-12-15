@@ -1,0 +1,26 @@
+@relation zoo-weka.filters.unsupervised.attribute.NumericToNominal-Rfirst-last
+
+@attribute hair {0,1}
+@attribute feathers {0,1}
+@attribute eggs {0,1}
+@attribute milk {0,1}
+@attribute airborne {0,1}
+@attribute aquatic {0,1}
+@attribute predator {0,1}
+@attribute toothed {0,1}
+@attribute backbone {0,1}
+@attribute breathes {0,1}
+@attribute venomous {0,1}
+@attribute fins {0,1}
+@attribute legs {0,2,4}
+@attribute tail {0,1}
+@attribute domestic {0,1}
+@attribute catsize {0,1}
+@attribute type {mamal,bird,reptile,fish,amphibian,insect,invertebrate}
+
+@data
+1,0,0,1,0,0,0,1,1,1,0,0,4,1,0,1,?
+0,1,1,0,1,0,0,0,1,1,0,0,2,1,1,0,?
+0,0,1,0,0,0,1,1,1,1,1,0,0,1,0,0,?
+0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,0,?
+0,0,1,0,0,1,1,1,1,1,0,0,4,1,0,0,?
