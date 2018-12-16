@@ -5,6 +5,8 @@ import pandas as pd
 import math
 import random
 
+alpha = 1
+
 #Handle data
 def converByte(line):
     converted = []
@@ -14,14 +16,14 @@ def converByte(line):
     return converted
 
 def loadArff(filename):
-    raw_data = arff.loadarff(filename)
-    df_data = pd.DataFrame(raw_data[0])
+    raw_data = (arff.loadarff(filename))
     dataset = []
-    for row in df_data.iterrows():
-        index, data = row
-        data = data.tolist()[1:]
-        dataset.append(converByte(data))
+    for line in raw_data[0]:
+        line = line.tolist()
+        dataset.append(converByte(line[1:]))
+    dataset = np.array(dataset)
     return dataset
+
 
 #Summarize data
 def splitDataset(dataset, splitRatio):
@@ -32,46 +34,36 @@ def splitDataset(dataset, splitRatio):
         index = random.randrange(len(copy))
         train_set.append(copy.pop(index))
 
-    return [train_set, copy]
+    return np.array(train_set), np.array(copy)
 
-def seperateByClass(dataset):
-    seperated = {}
-    for row in dataset:
-        if row[-1] not in seperated:
-            seperated[row[-1]] = []
-        seperated[row[-1]].append(row)
-    return seperated
-        
-# central middle of data        
-def mean(numbers):
-	return sum(numbers)/float(len(numbers))
- 
-# get standard deviation 
-def stdev(numbers):
-	avg = mean(numbers)
-	variance = sum([pow(x-avg,2) for x in numbers])/float(len(numbers)-1)
-	return math.sqrt(variance)
 
-def summarize(dataset):
-    summaries = []
-    data = [line[:-1] for line in dataset]
-    for attribute in zip(*data):
-        summaries.append((mean(attribute), stdev(attribute)))
-    return summaries
+class MultinominalNB(object):
+    #alpha for Laplace smoothing
+    def __init__(self, alpha = 1.0):
+        self.alpha = alpha
+    def fit(self, X, y):
+        seperated = [[x for x, t in zip(X, y) if t == c] for c in np.unique(y)]
+        count_sample = X.shape[0]
+        self.class_prior_ = [len(i) / count_sample for i in seperated]
+        count = np.array([np.array(i).sum(axis=0) for i in seperated]) + self.alpha
+        self.feature_prob = count / count.sum(axis = 1)[np.newaxis].T
+        return self
 
-def summarizeByClass(dataset):
-    seperated = seperateByClass(dataset)
-    summaries = {}
-    for className, instances in seperated.items():
-        summaries[className] = summarize(instances)
+    def predict_prob(self, X):
+        return [(self.feature_prob * x).sum(axis = 1) + self.class_prior_ for x in X]
 
-    return summaries
-
-# Make prediction
+    def predict(self, X):
+        return np.argmax(self.predict_prob(X), axis = 1)
 
 if __name__ == "__main__":    
-    data = loadArff('Zoo.arff')
-    train, test = splitDataset(data, 0.7)    
-    summariesEachClass = summarizeByClass(data)
-    print(summariesEachClass)
+    dataset = loadArff("Zoo.arff")
+    train, test = splitDataset(dataset, 0.7)
+    X_train = train[:, :-1].astype(np.int)
+    y_train = train[:, -1]
+    nb = MultinominalNB().fit(X_train, y_train)
+    #test
+    # X_test = test[:, :-1].astype(np.int)
+    # for t in X_test:
+    #     print(nb.predict(t))
+
     
