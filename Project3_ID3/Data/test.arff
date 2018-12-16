@@ -1,5 +1,6 @@
 @relation zoo-weka.filters.unsupervised.attribute.NumericToNominal-Rfirst-last
 
+@attribute animal {NameIsSecret}
 @attribute hair {0,1}
 @attribute feathers {0,1}
 @attribute eggs {0,1}
@@ -19,8 +20,8 @@
 @attribute type {mamal,bird,reptile,fish,amphibian,insect,invertebrate}
 
 @data
-1,0,0,1,0,0,0,1,1,1,0,0,4,1,0,1,?
-0,1,1,0,1,0,0,0,1,1,0,0,2,1,1,0,?
-0,0,1,0,0,0,1,1,1,1,1,0,0,1,0,0,?
-0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,0,?
-0,0,1,0,0,1,1,1,1,1,0,0,4,1,0,0,?
+NameIsSecret,1,0,0,1,0,0,0,1,1,1,0,0,4,1,0,1, ?
+NameIsSecret,0,1,1,0,1,0,0,0,1,1,0,0,2,1,1,0, ?
+NameIsSecret,0,0,1,0,0,0,1,1,1,1,1,0,0,1,0,0, ?
+NameIsSecret,0,0,1,0,0,1,1,1,1,0,0,1,0,1,0,0, ?
+NameIsSecret,0,0,1,0,0,1,1,1,1,1,0,0,4,1,0,0, ?

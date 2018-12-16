@@ -43,7 +43,6 @@ def splitDataset(dataset, splitRatio):
 def accuracy_score(testSet, pred):
     correct = 0
     for check in zip(testSet, pred):
-        print(check)
         if check[0] == check[1]:
             correct +=1 
     return correct/float(len(testSet)) * 100.0
@@ -70,17 +69,21 @@ class MultinominalNB(object):
 
 if __name__ == "__main__":    
     dataset = loadArff("Zoo.arff")
-    train, test = splitDataset(dataset, 0.7)
+    train, test = splitDataset(dataset, 1)
     X_train = train[:, :-1].astype(np.int)
     y_train = train[:, -1]
     nb = MultinominalNB().fit(X_train, y_train)
 
-    test
-    X_train = test[:, :-1].astype(np.int)
-    y_train = test[:, -1]
-    y_pred = nb.predict(X_train)
+    test = loadArff("./Data/test.arff")
+    X_test = test[:, :-1].astype(np.int)
+    print(X_test)
+    print(nb.predict(X_test))
+    # test
+    # X_train = test[:, :-1].astype(np.int)
+    # y_train = test[:, -1]
+    # y_pred = nb.predict(X_train)
 
-    print(accuracy_score(y_train, y_pred))
+    # print(accuracy_score(y_train, y_pred))
     
 
     
