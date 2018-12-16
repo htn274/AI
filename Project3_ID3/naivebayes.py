@@ -9,9 +9,15 @@ alpha = 1
 
 #Handle data
 def converByte(line):
-    converted = []
+    # legs = line[12]
+    converted = [] 
+    legs = [0] * 9
     for i in range(len(line) - 1):
-        converted.append(int(line[i]))
+        if i == 12:
+            legs[int(line[i])] += 1
+            converted = converted + legs
+        else:
+            converted.append(int(line[i]))
     converted.append(line[-1].decode('utf-8'))
     return converted
 
@@ -24,8 +30,6 @@ def loadArff(filename):
     dataset = np.array(dataset)
     return dataset
 
-
-#Summarize data
 def splitDataset(dataset, splitRatio):
     train_size = int(len(dataset)) * splitRatio
     train_set = []
@@ -36,13 +40,21 @@ def splitDataset(dataset, splitRatio):
 
     return np.array(train_set), np.array(copy)
 
+def accuracy_score(testSet, pred):
+    correct = 0
+    for check in zip(testSet, pred):
+        print(check)
+        if check[0] == check[1]:
+            correct +=1 
+    return correct/float(len(testSet)) * 100.0
 
 class MultinominalNB(object):
     #alpha for Laplace smoothing
     def __init__(self, alpha = 1.0):
         self.alpha = alpha
     def fit(self, X, y):
-        seperated = [[x for x, t in zip(X, y) if t == c] for c in np.unique(y)]
+        self.classes = np.unique(y)
+        seperated = [[x for x, t in zip(X, y) if t == c] for c in self.classes]
         count_sample = X.shape[0]
         self.class_prior_ = [len(i) / count_sample for i in seperated]
         count = np.array([np.array(i).sum(axis=0) for i in seperated]) + self.alpha
@@ -53,7 +65,8 @@ class MultinominalNB(object):
         return [(self.feature_prob * x).sum(axis = 1) + self.class_prior_ for x in X]
 
     def predict(self, X):
-        return np.argmax(self.predict_prob(X), axis = 1)
+        pred = np.argmax(self.predict_prob(X), axis = 1)
+        return [self.classes[p] for p in pred]
 
 if __name__ == "__main__":    
     dataset = loadArff("Zoo.arff")
@@ -61,9 +74,13 @@ if __name__ == "__main__":
     X_train = train[:, :-1].astype(np.int)
     y_train = train[:, -1]
     nb = MultinominalNB().fit(X_train, y_train)
-    #test
-    # X_test = test[:, :-1].astype(np.int)
-    # for t in X_test:
-    #     print(nb.predict(t))
+
+    test
+    X_train = test[:, :-1].astype(np.int)
+    y_train = test[:, -1]
+    y_pred = nb.predict(X_train)
+
+    print(accuracy_score(y_train, y_pred))
+    
 
     
