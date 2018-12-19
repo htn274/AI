@@ -1,4 +1,3 @@
-
 from scipy.io import arff
 import numpy as np
 import pandas as pd
@@ -79,11 +78,11 @@ if __name__ == "__main__":
     print(X_test)
     print(nb.predict(X_test))
     # test
-    # X_train = test[:, :-1].astype(np.int)
-    # y_train = test[:, -1]
-    # y_pred = nb.predict(X_train)
-
-    # print(accuracy_score(y_train, y_pred))
+#     X_train = test[:, :-1].astype(np.int)
+#     y_train = test[:, -1]
+#     y_pred = nb.predict(X_train)
+# 
+#     print(accuracy_score(y_train, y_pred))
     
 
     
