@@ -54,9 +54,9 @@ class MultinominalNB(object):
         self.classes = np.unique(y)
         seperated = [[x for x, t in zip(X, y) if t == c] for c in self.classes]
         count_sample = X.shape[0]
-        self.class_prior_ = [len(i) / count_sample for i in seperated]
+        self.class_prior_ = [np.log(len(i) / count_sample) for i in seperated]
         count = np.array([np.array(i).sum(axis=0) for i in seperated]) + self.alpha
-        self.feature_prob = count / count.sum(axis = 1)[np.newaxis].T
+        self.feature_prob = np.log(count / count.sum(axis = 1)[np.newaxis].T)
         return self
 
     def predict_prob(self, X):
@@ -64,45 +64,26 @@ class MultinominalNB(object):
 
     def predict(self, X):
         pred = np.argmax(self.predict_prob(X), axis = 1)
-<<<<<<< HEAD
         prob = np.max(self.predict_prob(X), axis = 1)
         return [self.classes[p] for p in pred]
 
 def test_from_file(filename):
+    print(filename)
     testset = loadArff(filename)
     X_test = testset[:, :-1].astype(np.int)
     pred = nb.predict(X_test)
     print(pred)
     # for i in range(len(pred)):
     #     print(pred[i], ':', np.exp(prob[i]))
-=======
-        return [self.classes[p] for p in pred]
->>>>>>> e1a7fff325b794e873c6c0cf63b81da19a56113d
 
 if __name__ == "__main__":    
-    dataset = loadArff("Zoo.arff")
-<<<<<<< HEAD
-    # split trainset and testset
-    # train, test = splitDataset(dataset, 0.7)
+    #Train model
+    dataset = loadArff("./Data/Zoo.arff")
     train = test = dataset
-=======
-    train, test = splitDataset(dataset, 1)
->>>>>>> e1a7fff325b794e873c6c0cf63b81da19a56113d
     X_train = train[:, :-1].astype(np.int)
     y_train = train[:, -1]
     nb = MultinominalNB().fit(X_train, y_train)
-
-<<<<<<< HEAD
-    
-=======
-    test = loadArff("./Data/test.arff")
-    X_test = test[:, :-1].astype(np.int)
-    print(X_test)
-    print(nb.predict(X_test))
-    # test
-#     X_train = test[:, :-1].astype(np.int)
-#     y_train = test[:, -1]
-#     y_pred = nb.predict(X_train)
-# 
-#     print(accuracy_score(y_train, y_pred))
->>>>>>> e1a7fff325b794e873c6c0cf63b81da19a56113d
+    y_pred = nb.predict(X_train)
+    print(accuracy_score(y_train, y_pred))
+    #Test
+    test_from_file("./Data/test.arff")
