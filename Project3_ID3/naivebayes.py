@@ -70,20 +70,21 @@ class MultinominalNB(object):
     def predict(self, X):
         pred = np.argmax(self.predict_prob(X), axis = 1)
         prob = np.max(self.predict_prob(X), axis = 1)
-        return [self.classes[p] for p in pred], prob
+        return [self.classes[p] for p in pred]
 
 def test_from_file(filename):
     testset = loadArff(filename)
     X_test = testset[:, :-1].astype(np.int)
-    pred, prob = nb.predict(X_test)
-    # print(pred)
-    for i in range(len(pred)):
-        print(pred[i], ':', np.exp(prob[i]))
+    pred = nb.predict(X_test)
+    print(pred)
+    # for i in range(len(pred)):
+    #     print(pred[i], ':', np.exp(prob[i]))
 
 if __name__ == "__main__":    
     # Load data from file
     dataset = loadArff("Zoo.arff")
     # split trainset and testset
+    # train, test = splitDataset(dataset, 0.7)
     train = test = dataset
     X_train = train[:, :-1].astype(np.int)
     y_train = train[:, -1]
