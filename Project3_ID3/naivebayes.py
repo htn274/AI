@@ -1,4 +1,3 @@
-
 from scipy.io import arff
 import numpy as np
 import pandas as pd
@@ -30,7 +29,7 @@ def loadArff(filename):
     dataset = np.array(dataset)
     return dataset
 
-def splitDataset(dataset, splitRatio = 0.7):
+def splitDataset(dataset, splitRatio):
     train_size = int(len(dataset)) * splitRatio
     train_set = []
     copy = list(dataset)
@@ -45,8 +44,6 @@ def accuracy_score(testSet, pred):
     for check in zip(testSet, pred):
         if check[0] == check[1]:
             correct +=1 
-        # else:
-        #     print(check)
     return correct/float(len(testSet)) * 100.0
 
 class MultinominalNB(object):
@@ -57,11 +54,9 @@ class MultinominalNB(object):
         self.classes = np.unique(y)
         seperated = [[x for x, t in zip(X, y) if t == c] for c in self.classes]
         count_sample = X.shape[0]
-        self.class_prior_ = [np.log(len(i) / count_sample) for i in seperated]
-        # self.class_prior_ = (len(i) / count_sample) for i in seperated]
+        self.class_prior_ = [len(i) / count_sample for i in seperated]
         count = np.array([np.array(i).sum(axis=0) for i in seperated]) + self.alpha
-        self.feature_prob = np.log(count / (count.sum(axis = 1)[np.newaxis].T))
-        # self.feature_prob = (count / (count.sum(axis = 1)[np.newaxis].T))
+        self.feature_prob = count / count.sum(axis = 1)[np.newaxis].T
         return self
 
     def predict_prob(self, X):
@@ -69,6 +64,7 @@ class MultinominalNB(object):
 
     def predict(self, X):
         pred = np.argmax(self.predict_prob(X), axis = 1)
+<<<<<<< HEAD
         prob = np.max(self.predict_prob(X), axis = 1)
         return [self.classes[p] for p in pred]
 
@@ -79,24 +75,34 @@ def test_from_file(filename):
     print(pred)
     # for i in range(len(pred)):
     #     print(pred[i], ':', np.exp(prob[i]))
+=======
+        return [self.classes[p] for p in pred]
+>>>>>>> e1a7fff325b794e873c6c0cf63b81da19a56113d
 
 if __name__ == "__main__":    
-    # Load data from file
     dataset = loadArff("Zoo.arff")
+<<<<<<< HEAD
     # split trainset and testset
     # train, test = splitDataset(dataset, 0.7)
     train = test = dataset
+=======
+    train, test = splitDataset(dataset, 1)
+>>>>>>> e1a7fff325b794e873c6c0cf63b81da19a56113d
     X_train = train[:, :-1].astype(np.int)
     y_train = train[:, -1]
-    X_test = test[:, :-1].astype(np.int)
-    y_test = train[:, -1]
-    # Train model
     nb = MultinominalNB().fit(X_train, y_train)
-    y_pred = nb.predict(X_test)
-    print("Acuracy score: ", accuracy_score(y_test, y_pred))
-    # Test from file
-    test_from_file('./Data/test.arff')
-    
-    
 
+<<<<<<< HEAD
     
+=======
+    test = loadArff("./Data/test.arff")
+    X_test = test[:, :-1].astype(np.int)
+    print(X_test)
+    print(nb.predict(X_test))
+    # test
+#     X_train = test[:, :-1].astype(np.int)
+#     y_train = test[:, -1]
+#     y_pred = nb.predict(X_train)
+# 
+#     print(accuracy_score(y_train, y_pred))
+>>>>>>> e1a7fff325b794e873c6c0cf63b81da19a56113d
